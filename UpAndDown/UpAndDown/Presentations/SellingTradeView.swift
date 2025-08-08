@@ -13,14 +13,25 @@ struct SellingTradeView: View {
     let player: Player
     let tradeManager: TradeManager
     let priceManager: PriceManager
+    let onTradeComplete: (() -> Void)?
     
+    @Environment(AppRouter.self) private var router
     @State private var sellQuantityString: String = ""
     @State private var sellTotalValueString: String = ""
     @State private var isInputInvalid: Bool = false
+    
+    init(coin: Coin, player: Player, tradeManager: TradeManager, priceManager: PriceManager, onTradeComplete: (() -> Void)? = nil) {
+        self.coin = coin
+        self.player = player
+        self.tradeManager = tradeManager
+        self.priceManager = priceManager
+        self.onTradeComplete = onTradeComplete
+    }
  
     
     private var currentHolding: CoinHolding? {
-        player.holdings.first { $0.coinId == coin.id }
+        guard !player.holdings.isEmpty else { return nil }
+        return player.holdings.first { $0.coinId == coin.id }
     }
     
     private var holdingAmount: Double {
@@ -51,7 +62,8 @@ struct SellingTradeView: View {
 
     
     var body: some View {
-        VStack{
+        NavigationView {
+            VStack{
         
             VStack(alignment: .leading, spacing: 20) {
                 
@@ -163,6 +175,9 @@ struct SellingTradeView: View {
             .padding(.horizontal)
             .padding(.bottom, 34)
         }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        }
         .onTapGesture {
             hideKeyboard()
         }
@@ -239,9 +254,14 @@ struct SellingTradeView: View {
         
         switch result {
         case .success:
-            
             sellQuantityString = ""
             sellTotalValueString = ""
+            // completion handler 호출 또는 게임 화면으로 돌아가기
+            if let onTradeComplete = onTradeComplete {
+                onTradeComplete()
+            } else {
+                router.currentRoute = .game
+            }
         default:
             break
         }

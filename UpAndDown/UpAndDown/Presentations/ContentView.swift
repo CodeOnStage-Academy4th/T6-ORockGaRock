@@ -7,6 +7,7 @@ class AppRouter {
         case start, game, result
         case buyingtrade(Coin)
         case sellingtrade(Coin)
+        case catalog(Coin)
     }
 
     var currentRoute: Route = .start
@@ -22,9 +23,24 @@ struct ContentView: View {
     @State private var gameTimer = GameTimer()
     @State private var priceManager: PriceManager?
     @State private var tradeManager: TradeManager?
-    @State private var currentPlayer: Player?
+    @State private var currentPlayerId: UUID?
     @State private var currentGameRecord: GameRecord?
     @StateObject private var toastManager = ToastManager()
+    
+    // 현재 플레이어를 Query로 가져오기
+    private var currentPlayer: Player? {
+        guard let playerId = currentPlayerId else { return nil }
+        let request = FetchDescriptor<Player>(predicate: #Predicate<Player> { player in
+            player.id == playerId
+        })
+        do {
+            let players = try modelContext.fetch(request)
+            return players.first
+        } catch {
+            print("현재 플레이어 조회 실패: \(error)")
+            return nil
+        }
+    }
    
 
     var body: some View {
@@ -37,27 +53,25 @@ struct ContentView: View {
                         gameTimer: gameTimer,
                         priceManager: priceManager,
                         tradeManager: tradeManager,
-                        currentPlayer: $currentPlayer,
+                        currentPlayer: $currentPlayerId,
                         currentGameRecord: $currentGameRecord
                     )
                 case .game:
                     if let player = currentPlayer {
-
+                        
                         TabView {
                             VStack {
                                 GameTimerView(gameTimer: gameTimer)
-                                PortfolioView(
-                                    player: player,
-                                    coins: coins,
+                                CatalogView(
                                     tradeManager: tradeManager,
-                                    gameTimer: gameTimer
+                                    priceManager: priceManager
                                 )
                             }
                             .tabItem {
-                                Image(systemName: "chart.line.uptrend.xyaxis")
-                                Text("거래")
+                                Image(systemName: "list.bullet")
+                                Text("목록")
                             }
-
+                            
                             VStack {
                                 GameTimerView(gameTimer: gameTimer)
                                 HoldingView(
@@ -81,7 +95,10 @@ struct ContentView: View {
                 case .sellingtrade(let coin):
                     if let player = currentPlayer, let tm = tradeManager, let pm = priceManager {
                         SellingTradeView(coin: coin, player: player, tradeManager: tm, priceManager: pm)
-                    }                }
+                    }
+                case .catalog(let coin):
+                    CatalogView(tradeManager: tradeManager, priceManager: priceManager)
+                }
             }
             .environment(router)
             .environmentObject(toastManager)

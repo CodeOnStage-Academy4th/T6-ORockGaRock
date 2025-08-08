@@ -12,6 +12,9 @@ struct CatalogView: View {
     
     // MARK: - Property
     
+    let tradeManager: TradeManager?
+    let priceManager: PriceManager?
+    
     @State private var selectedCoin: Coin?
     @State private var gameTimer = GameTimer()
     
@@ -37,8 +40,10 @@ struct CatalogView: View {
                     coin: coin,
                     player: players.first,
                     currentPrice: coin.currentPrice,
-                    holding: players.first?.holdings.first(where: { $0.coinId == coin.id })
-                    
+                    holding: players.first?.holdings.isEmpty == false ? 
+                        players.first?.holdings.first(where: { $0.coinId == coin.id }) : nil,
+                    tradeManager: tradeManager,
+                    priceManager: priceManager
                 )
                 .presentationDetents([.fraction(0.95)])
                 .presentationDragIndicator(.visible)

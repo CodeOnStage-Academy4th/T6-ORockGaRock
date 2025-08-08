@@ -12,7 +12,7 @@ struct LineChartView: View {
     let data: [Double]
     let lineWidth: CGFloat
     let bottomPadding: CGFloat
-    
+
     private var lineColor: Color {
         guard data.count >= 2 else { return .primary }
         let current = data.last!
@@ -26,25 +26,25 @@ struct LineChartView: View {
             return .primary
         }
     }
-    
+
     // 성능 최적화를 위한 computed property
     private var optimizedData: [Double] {
         let count = min(data.count, visibleDataCount)
         return Array(data.suffix(count))
     }
-    
+
     init(data: [Double], lineWidth: CGFloat = 2, bottomPadding: CGFloat = 0.2) {
         self.data = data
         self.lineWidth = lineWidth
         self.bottomPadding = bottomPadding
     }
-    
+
     var body: some View {
         ZStack {
             // 채우기 영역
             LineShape(dataPoints: optimizedData, fillArea: true, bottomPadding: bottomPadding)
                 .fill(LinearGradient(colors: [lineColor.opacity(0.8), lineColor.opacity(0)], startPoint: .top, endPoint: .bottom))
-            
+
             // 선 그리기
             LineShape(dataPoints: optimizedData, fillArea: false, bottomPadding: bottomPadding)
                 .stroke(lineColor, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))

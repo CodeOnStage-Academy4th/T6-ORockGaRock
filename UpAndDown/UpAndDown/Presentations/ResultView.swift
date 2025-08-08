@@ -113,11 +113,8 @@ struct ResultView: View {
         }
     }
 
-
-
-  
-  struct RisingTextView: View {
-      @State private var rise = false
+    struct RisingTextView: View {
+        @State private var rise = false
 
         var body: some View {
             VStack(spacing: 0) {
@@ -135,29 +132,29 @@ struct ResultView: View {
         }
     }
 
-  struct SlidingTextView: View {
-      @State private var show = false
+    struct SlidingTextView: View {
+        @State private var show = false
 
-      var body: some View {
-          HStack(spacing: 0) {
-              Text("쫄")
-                  .rotationEffect(.degrees(-15))
-                  .offset(y: -10)
-              Text("...")
-              Text("?")
-          }
-          .font(.system(size: 100, weight: .black))
-          .offset(x: show ? 0 : -500)
-          .offset(y: -250)
-          .animation(.easeOut(duration: 1.0), value: show)
-          .onAppear {
-              show = true
-          }
-      }
-  }
-  
-  struct FallingTextView: View {
-      @State private var fall = false
+        var body: some View {
+            HStack(spacing: 0) {
+                Text("쫄")
+                    .rotationEffect(.degrees(-15))
+                    .offset(y: -10)
+                Text("...")
+                Text("?")
+            }
+            .font(.system(size: 100, weight: .black))
+            .offset(x: show ? 0 : -500)
+            .offset(y: -250)
+            .animation(.easeOut(duration: 1.0), value: show)
+            .onAppear {
+                show = true
+            }
+        }
+    }
+
+    struct FallingTextView: View {
+        @State private var fall = false
 
         var body: some View {
             ZStack {

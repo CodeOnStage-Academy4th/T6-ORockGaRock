@@ -26,7 +26,7 @@ struct ContentView: View {
     @State private var currentPlayer: Player? // 직접 Player 객체 관리
     @State private var currentGameRecord: GameRecord?
     @StateObject private var toastManager = ToastManager()
-    
+
     var body: some View {
         ZStack {
             Group {
@@ -44,18 +44,18 @@ struct ContentView: View {
                     if let player = currentPlayer {
                         TabView {
                             VStack {
-                                GameTimerView(gameTimer: gameTimer)
                                 CatalogView(
                                     tradeManager: tradeManager,
                                     priceManager: priceManager,
-                                    currentPlayer: player
+                                    currentPlayer: player,
+                                    gameTimer: gameTimer
                                 )
                             }
                             .tabItem {
                                 Image(systemName: "list.bullet")
                                 Text("목록")
                             }
-                            
+
                             VStack {
                                 GameTimerView(gameTimer: gameTimer)
                                 HoldingView(
@@ -72,13 +72,13 @@ struct ContentView: View {
                         .onAppear {
                             // 게임 화면 진입 시 플레이어 상태 확인 및 강제 업데이트
                             print("게임 화면 진입: 플레이어 현금 = \(player.cash)")
-                            
+
                             // 혹시 모를 상황을 대비해 다시 한번 확인
                             if player.cash != 1_000_000.0 {
                                 print("⚠️ 경고: 플레이어 현금이 100만원이 아님! 강제 수정")
                                 player.cash = 1_000_000.0
                                 player.holdings.removeAll()
-                                
+
                                 do {
                                     try modelContext.save()
                                     print("✅ 플레이어 상태 강제 수정 완료")
@@ -90,27 +90,28 @@ struct ContentView: View {
                     }
                 case .result:
                     ResultView(gameRecord: currentGameRecord)
-                case .buyingtrade(let coin):
+                case let .buyingtrade(coin):
                     if let player = currentPlayer, let tm = tradeManager, let pm = priceManager {
                         BuyingTradeView(coin: coin, player: player, tradeManager: tm, priceManager: pm)
                     }
-                case .sellingtrade(let coin):
+                case let .sellingtrade(coin):
                     if let player = currentPlayer, let tm = tradeManager, let pm = priceManager {
                         SellingTradeView(coin: coin, player: player, tradeManager: tm, priceManager: pm)
                     }
-                case .catalog(let coin):
+                case let .catalog(coin):
                     if let player = currentPlayer {
-                          CatalogView(
-                              tradeManager: tradeManager,
-                              priceManager: priceManager,
-                              currentPlayer: player
-                          )
-                      }
+                        CatalogView(
+                            tradeManager: tradeManager,
+                            priceManager: priceManager,
+                            currentPlayer: player,
+                            gameTimer: gameTimer
+                        )
+                    }
                 }
             }
             .environment(router)
             .environmentObject(toastManager)
-            
+
             // 토스트 뷰를 최상단에 표시
             VStack {
                 Spacer()

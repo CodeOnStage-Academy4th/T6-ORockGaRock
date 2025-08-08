@@ -82,6 +82,13 @@ struct ResultView: View {
 
     private var againButton: some View {
         Button("다시 하기") {
+//            let schema = [
+//                Coin,
+//                PriceRecord,
+//                Player,
+//                CoinHolding,
+//            ]
+            
             router.currentRoute = .start
         }
         .buttonStyle(.borderedProminent)

@@ -59,6 +59,7 @@ struct ContentView: View {
                             VStack {
                                 GameTimerView(gameTimer: gameTimer)
                                 HoldingView(
+//                                AssetView(
                                     player: player,
                                     coins: coins,
                                     tradeManager: tradeManager

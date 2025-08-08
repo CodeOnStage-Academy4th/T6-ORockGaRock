@@ -36,72 +36,71 @@ struct HoldingView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            // 보유 자산 요약
-            VStack(spacing: 8) {
-                HStack {
-                    Text("보유 자산")
-                    Spacer()
-                    Text("₩\(Int(totalHoldingValue))")
+        ZStack {
+            Color.white01
+                .ignoresSafeArea()
+            VStack(spacing: 10) {
+                // 보유 자산 요약
+                VStack(spacing: 15) {
+                    Text("총 자산")
+                        .font(.title2)
                         .fontWeight(.semibold)
-                }
-
-                HStack {
-                    Text("평가손익")
-                    Spacer()
-                    VStack(alignment: .trailing) {
-                        Text("₩\(Int(totalProfitLoss))")
-                            .fontWeight(.bold)
-                            .foregroundColor(totalProfitLoss >= 0 ? .green : .red)
-                        Text("\(profitLossRate >= 0 ? "+" : "")\(profitLossRate, specifier: "%.2f")%")
-                            .font(.caption)
-                            .foregroundColor(totalProfitLoss >= 0 ? .green : .red)
+                    Text("\(Int(totalHoldingValue+player.cash)) 원")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                    Text("총 수익률: \(String(format: "%.2f", profitLossRate))%")
+                        .fontWeight(.semibold)
+                    HStack(){
+                        Text("현금자산")
+                        Spacer()
+                        Text("\(Int(player.cash)) 원")
                     }
+                    .font(.title3)
+                    .padding(.horizontal, 100)
+                    
                 }
-            }
-            .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(8)
 
-            // 보유 코인 목록
-            if player.holdings.isEmpty {
-                VStack(spacing: 16) {
-                    Image(systemName: "chart.pie")
-                        .font(.system(size: 60))
-                        .foregroundColor(.gray)
-                    Text("보유 중인 코인이 없습니다")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                    Text("코인을 매수해보세요!")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(player.holdings, id: \.id) { holding in
-                            if let coin = coins.first(where: { $0.id == holding.coinId }) {
-                                HoldingRowView(
-                                    holding: holding,
-                                    coin: coin,
-                                    player: player,
-                                    tradeManager: tradeManager,
-                                    onTradeResult: { message in
-                                        tradeResultMessage = message
-                                        showingTradeResult = true
-                                    }
-                                )
+                // 보유 코인 목록
+                if player.holdings.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "chart.pie")
+                            .font(.system(size: 60))
+                            .foregroundColor(.gray)
+                        Text("보유 중인 코인이 없습니다")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                        Text("코인을 매수해보세요!")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(player.holdings, id: \.id) { holding in
+                                if let coin = coins.first(where: { $0.id == holding.coinId }) {
+                                    HoldingRowView(
+                                        holding: holding,
+                                        coin: coin,
+                                        player: player,
+                                        tradeManager: tradeManager,
+                                        onTradeResult: { message in
+                                            tradeResultMessage = message
+                                            showingTradeResult = true
+                                        }
+                                    )
+                                }
                             }
                         }
+                        .padding()
                     }
                 }
             }
-        }
-        .alert("거래 결과", isPresented: $showingTradeResult) {
-            Button("확인") {}
-        } message: {
-            Text(tradeResultMessage)
+            .alert("거래 결과", isPresented: $showingTradeResult) {
+                Button("확인") {}
+            } message: {
+                Text(tradeResultMessage)
+            }
         }
     }
 }
@@ -131,76 +130,74 @@ struct HoldingRowView: View {
         guard purchaseValue > 0 else { return 0 }
         return (profitLoss / purchaseValue) * 100
     }
+    
+    private var profitPrefix: String {
+        profitLossRate > 0 ? "+" : ""
+    }
 
     var body: some View {
-        VStack(spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(coin.name)
+        HStack(spacing: 8){
+            VStack(alignment: .leading, spacing: 4){
+                Text(coin.name)
+                    .font(.title)
+                    .fontWeight(.heavy)
+                HStack{
+                    Text("₩ \(coin.currentPrice, specifier: "%.0f")")
                         .font(.headline)
-                    Text(coin.symbol)
+                    Text("(\(profitPrefix)\(profitLossRate, specifier: "%.1f%")%)")
                         .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("₩\(Int(coin.currentPrice))")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                    Text("보유: \(holding.quantity, specifier: "%.4f")")
-                        .font(.caption)
-                        .foregroundColor(.blue)
+                        .fontWeight(.medium)
+                        .foregroundColor(
+                            profitLossRate > 0 ? .red :
+                            (profitLossRate == 0 ? .black : .blue)
+                        )
                 }
             }
-
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("평균단가")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text("₩\(Int(holding.averagePrice))")
-                        .font(.body)
-                        .fontWeight(.medium)
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("평가손익")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    HStack(spacing: 4) {
-                        Text("₩\(Int(profitLoss))")
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundColor(profitLoss >= 0 ? .green : .red)
-                        Text("(\(profitLossRate >= 0 ? "+" : "")\(profitLossRate, specifier: "%.2f")%)")
-                            .font(.caption)
-                            .foregroundColor(profitLoss >= 0 ? .green : .red)
+            Spacer()
+            HStack{
+                VStack(alignment:.trailing, spacing: 5){
+                    HStack{
+                        Text("보유수량")
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text("\(holding.quantity,specifier: "%.3f") 개")
+                    }
+                    HStack{
+                        Text("평균매수가")
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text("\(purchaseValue, specifier: "%.f") 원")
+                    }
+                    HStack{
+                        Text("평가손익")
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text("\(profitPrefix)\(profitLoss, specifier: "%.f") 원")
+                            .foregroundColor(
+                                profitLossRate > 0 ? .red :
+                                (profitLossRate == 0 ? .black : .blue)
+                            )
+                    }
+                    HStack{
+                        Text("평가금액")
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text("\(currentValue, specifier: "%.f") 원")
+                            .foregroundColor(
+                                profitLossRate > 0 ? .red :
+                                (profitLossRate == 0 ? .black : .blue)
+                            )
                     }
                 }
+                .monospacedDigit()
+                .frame(width: 160, alignment: .trailing)
+
             }
-
-            HStack {
-                Text("현재가치: ₩\(Int(currentValue))")
-                    .font(.body)
-                    .fontWeight(.medium)
-
-                Spacer()
-
-                Button("매도") {
-                    showingSellSheet = true
-                }
-                .buttonStyle(.bordered)
-                .tint(.red)
-            }
+            .font(.system(size: 13))
         }
         .padding()
         .background(Color(.systemBackground))
         .cornerRadius(12)
-        .shadow(radius: 2)
         .sheet(isPresented: $showingSellSheet) {
             TradeSheetView(
                 coin: coin,
@@ -210,6 +207,7 @@ struct HoldingRowView: View {
                 onTradeResult: onTradeResult
             )
         }
+        
     }
 }
 

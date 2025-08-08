@@ -121,6 +121,40 @@ struct StartView: View {
             for record in incompleteGameRecords {
                 modelContext.delete(record)
             }
+            
+            
+//            let fetchDescriptor1 = FetchDescriptor<Coin>()
+//            guard let items = try? modelContext.fetch(fetchDescriptor1) else {
+//                return
+//            }
+//            for item in items {
+//                modelContext.delete(item)
+//            }
+            
+            let fetchDescriptor2 = FetchDescriptor<PriceRecord>()
+            guard let items = try? modelContext.fetch(fetchDescriptor2) else {
+                return
+            }
+            for item in items {
+                modelContext.delete(item)
+            }
+            
+//            let fetchDescriptor3 = FetchDescriptor<Player>()
+//            guard let items = try? modelContext.fetch(fetchDescriptor3) else {
+//                return
+//            }
+//            for item in items {
+//                modelContext.delete(item)
+//            }
+            
+            let fetchDescriptor4 = FetchDescriptor<CoinHolding>()
+            guard let items = try? modelContext.fetch(fetchDescriptor4) else {
+                return
+            }
+            for item in items {
+                modelContext.delete(item)
+            }
+            
 
             try modelContext.save()
             print("미완료 게임 데이터 정리 완료")

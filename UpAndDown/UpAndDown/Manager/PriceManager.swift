@@ -57,11 +57,9 @@ class PriceManager {
 
     func createDefaultCoins() {
         let defaultCoins = [
-            ("비트코인", "BTC", 50_000_000.0),
-            ("이더리움", "ETH", 3_000_000.0),
-            ("리플", "XRP", 500.0),
             ("도지코인", "DOGE", 100.0),
-            ("솔라나", "SOL", 100_000.0),
+            ("개죽코인", "GJUK", 10000.0),
+            ("햅삐코인", "HAPP", 1000000.0),
         ]
 
         for (name, symbol, price) in defaultCoins {

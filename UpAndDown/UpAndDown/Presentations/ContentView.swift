@@ -57,17 +57,18 @@ struct ContentView: View {
                             }
 
                             VStack {
-                                GameTimerView(gameTimer: gameTimer)
                                 HoldingView(
 //                                AssetView(
                                     player: player,
                                     coins: coins,
-                                    tradeManager: tradeManager
+                                    tradeManager: tradeManager,
+                                    gameTimer: gameTimer,
+                                    currentPlayer: player
                                 )
                             }
                             .tabItem {
-                                Image(systemName: "briefcase")
-                                Text("보유")
+                                Image(systemName: "wonsign")
+                                Text("총 자산")
                             }
                         }
                         .onAppear {

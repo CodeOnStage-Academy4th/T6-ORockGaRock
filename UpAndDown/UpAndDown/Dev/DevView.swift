@@ -21,6 +21,10 @@ struct DevView: View {
     @State private var currentGameRecord: GameRecord?
     @State private var isGameStarted = false
 
+    @StateObject private var toastManager = ToastManager()
+    
+
+
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
@@ -79,6 +83,20 @@ struct DevView: View {
                 setupGame()
             }
         }
+
+        .overlay(
+            // 토스트 오버레이 - 화면 중앙에 위치
+            ZStack {
+                if toastManager.isVisible {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                        .onTapGesture { }
+                }
+                
+                ToastView(title: toastManager.title, description: toastManager.description, isVisible: toastManager.isVisible)
+            }
+        )
+
     }
 
     private func setupGame() {
@@ -99,6 +117,19 @@ struct DevView: View {
     }
 
     private func startGame() {
+
+        // 게임 시작 토스트 표시 후 실제 게임 시작
+        toastManager.showToast(
+            title: "게임이 곧 시작됩니다",
+            description: "5분 동안 100만원으로\n단타 코인 모의투자를 통해\n극락과 나락을 경험해보세요!",
+            duration: 4.5
+        ) {
+            self.actuallyStartGame()
+        }
+    }
+    
+    private func actuallyStartGame() {
+
         // 새 플레이어 생성
         currentPlayer = Player(name: "플레이어")
         if let player = currentPlayer {
@@ -132,6 +163,14 @@ struct DevView: View {
            let gameRecord = currentGameRecord
         {
             gameRecord.completeGame(finalAssets: player.totalAssets)
+
+
+            // 게임 종료 토스트 표시
+            toastManager.showToast(
+                title: "Time's UP!",
+                description: "게임이 종료되었습니다!\n5분동안 어떠한 결과를 냈는지\n확인해보시죠🤑"
+            )
+            
 
             do {
                 try modelContext.save()

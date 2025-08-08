@@ -23,6 +23,7 @@ struct ContentView: View {
     @State private var currentPlayer: Player?
     @State private var currentGameRecord: GameRecord?
 
+
     var body: some View {
         Group {
             switch router.currentRoute {
@@ -37,6 +38,7 @@ struct ContentView: View {
                 )
             case .game:
                 if let player = currentPlayer {
+
                     TabView {
                         VStack {
                             GameTimerView(gameTimer: gameTimer)
@@ -65,6 +67,14 @@ struct ContentView: View {
                             Text("보유")
                         }
                     }
+
+                    PortfolioView(
+                        player: player,
+                        coins: coins,
+                        tradeManager: tradeManager,
+                        gameTimer: gameTimer
+                    )
+
                 }
             case .result:
                 ResultView(gameRecord: currentGameRecord)

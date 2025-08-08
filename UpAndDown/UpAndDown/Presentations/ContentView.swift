@@ -22,7 +22,7 @@ struct ContentView: View {
     @State private var tradeManager: TradeManager?
     @State private var currentPlayer: Player?
     @State private var currentGameRecord: GameRecord?
-    
+
 
     var body: some View {
         Group {
@@ -38,12 +38,43 @@ struct ContentView: View {
                 )
             case .game:
                 if let player = currentPlayer {
+
+                    TabView {
+                        VStack {
+                            GameTimerView(gameTimer: gameTimer)
+                            PortfolioView(
+                                player: player,
+                                coins: coins,
+                                tradeManager: tradeManager,
+                                gameTimer: gameTimer
+                            )
+                        }
+                        .tabItem {
+                            Image(systemName: "chart.line.uptrend.xyaxis")
+                            Text("거래")
+                        }
+
+                        VStack {
+                            GameTimerView(gameTimer: gameTimer)
+                            HoldingView(
+                                player: player,
+                                coins: coins,
+                                tradeManager: tradeManager
+                            )
+                        }
+                        .tabItem {
+                            Image(systemName: "briefcase")
+                            Text("보유")
+                        }
+                    }
+
                     PortfolioView(
                         player: player,
                         coins: coins,
                         tradeManager: tradeManager,
                         gameTimer: gameTimer
                     )
+
                 }
             case .result:
                 ResultView(gameRecord: currentGameRecord)

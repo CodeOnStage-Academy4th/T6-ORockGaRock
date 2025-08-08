@@ -11,11 +11,11 @@ struct StartView: View {
     let tradeManager: TradeManager?
     @Binding var currentPlayer: Player?
     @Binding var currentGameRecord: GameRecord?
-    
+
 
     var body: some View {
         VStack {
-          
+
             Spacer()
 
             title

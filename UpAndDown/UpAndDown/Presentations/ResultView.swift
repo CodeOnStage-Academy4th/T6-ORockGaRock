@@ -25,7 +25,7 @@ struct ResultView: View {
 
             Spacer()
             bottomText
-          
+
             againButton
         }
         .padding()
@@ -58,6 +58,22 @@ struct ResultView: View {
         .buttonStyle(.borderedProminent)
         .tint(.black)
     }
+
+
+    private var bottomText: some View {
+        if let rate = displayRecord?.profitRate {
+            if rate > 10 {
+                AnyView(RisingTextView())
+            } else if rate < -10 {
+                AnyView(FallingTextView())
+            } else {
+                AnyView(SlidingTextView())
+            }
+        } else {
+            AnyView(EmptyView())
+        }
+    }
+
   
   private var bottomText: some View {
       if let rate = displayRecord?.profitRate {
@@ -136,6 +152,7 @@ struct ResultView: View {
   }
   
   
+
 }
 
 #Preview {

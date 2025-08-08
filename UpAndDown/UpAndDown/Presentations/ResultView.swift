@@ -60,31 +60,80 @@ struct ResultView: View {
     }
   
   private var bottomText: some View {
-      FallingTextView()
+      if let rate = displayRecord?.profitRate {
+          if rate > 10 {
+              AnyView(RisingTextView())
+          } else if rate < -10 {
+              AnyView(FallingTextView())
+          } else {
+              AnyView(SlidingTextView())
+          }
+      } else {
+          AnyView(EmptyView())
+      }
   }
 
-struct FallingTextView: View {
-    @State private var fall = false
+  
+  struct RisingTextView: View {
+      @State private var rise = false
 
-    var body: some View {
-        ZStack {
-            Text("나")
-                .font(.system(size: 220, weight: .black))
-                .rotationEffect(.degrees(-20))
-                .offset(x: -50, y: fall ? -250 : -300)
-                .animation(.interpolatingSpring(stiffness: 70, damping: 8).delay(0.1), value: fall)
+      var body: some View {
+          VStack(spacing: 0) {
+              Text("극")
+              Text("락")
+          }
+          .font(.system(size: 220, weight: .black))
+          .offset(y: rise ? -30 : 300)
+          .animation(.interpolatingSpring(stiffness: 70, damping: 8), value: rise)
+          .onAppear {
+              rise = true
+          }
+      }
+  }
 
-            Text("락")
-                .font(.system(size: 220, weight: .black))
-                .rotationEffect(.degrees(20))
-                .offset(x: 40, y: fall ? -20 : -300)
-                .animation(.interpolatingSpring(stiffness: 70, damping: 8).delay(0.2), value: fall)
-        }
-        .onAppear {
-            fall = true
-        }
-    }
-}
+  struct SlidingTextView: View {
+      @State private var show = false
+
+      var body: some View {
+          HStack(spacing: 0) {
+              Text("쫄")
+                  .rotationEffect(.degrees(-15))
+                  .offset(y: -10)
+              Text("...")
+              Text("?")
+          }
+          .font(.system(size: 100, weight: .black))
+          .offset(x: show ? 0 : -500)
+          .offset(y: -250)
+          .animation(.easeOut(duration: 1.0), value: show)
+          .onAppear {
+              show = true
+          }
+      }
+  }
+  
+  struct FallingTextView: View {
+      @State private var fall = false
+
+      var body: some View {
+          ZStack {
+              Text("나")
+                  .font(.system(size: 220, weight: .black))
+                  .rotationEffect(.degrees(-20))
+                  .offset(x: -50, y: fall ? -250 : -300)
+                  .animation(.interpolatingSpring(stiffness: 70, damping: 8).delay(0.1), value: fall)
+
+              Text("락")
+                  .font(.system(size: 220, weight: .black))
+                  .rotationEffect(.degrees(20))
+                  .offset(x: 40, y: fall ? -20 : -300)
+                  .animation(.interpolatingSpring(stiffness: 70, damping: 8).delay(0.2), value: fall)
+          }
+          .onAppear {
+              fall = true
+          }
+      }
+  }
   
   
 }

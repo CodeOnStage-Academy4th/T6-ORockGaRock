@@ -23,26 +23,10 @@ struct ContentView: View {
     @State private var gameTimer = GameTimer()
     @State private var priceManager: PriceManager?
     @State private var tradeManager: TradeManager?
-    @State private var currentPlayerId: UUID?
+    @State private var currentPlayer: Player? // 직접 Player 객체 관리
     @State private var currentGameRecord: GameRecord?
     @StateObject private var toastManager = ToastManager()
     
-    // 현재 플레이어를 Query로 가져오기
-    private var currentPlayer: Player? {
-        guard let playerId = currentPlayerId else { return nil }
-        let request = FetchDescriptor<Player>(predicate: #Predicate<Player> { player in
-            player.id == playerId
-        })
-        do {
-            let players = try modelContext.fetch(request)
-            return players.first
-        } catch {
-            print("현재 플레이어 조회 실패: \(error)")
-            return nil
-        }
-    }
-   
-
     var body: some View {
         ZStack {
             Group {
@@ -53,12 +37,11 @@ struct ContentView: View {
                         gameTimer: gameTimer,
                         priceManager: priceManager,
                         tradeManager: tradeManager,
-                        currentPlayer: $currentPlayerId,
+                        currentPlayer: $currentPlayer,
                         currentGameRecord: $currentGameRecord
                     )
                 case .game:
                     if let player = currentPlayer {
-                        
                         TabView {
                             VStack {
                                 GameTimerView(gameTimer: gameTimer)
@@ -83,6 +66,24 @@ struct ContentView: View {
                             .tabItem {
                                 Image(systemName: "briefcase")
                                 Text("보유")
+                            }
+                        }
+                        .onAppear {
+                            // 게임 화면 진입 시 플레이어 상태 확인 및 강제 업데이트
+                            print("게임 화면 진입: 플레이어 현금 = \(player.cash)")
+                            
+                            // 혹시 모를 상황을 대비해 다시 한번 확인
+                            if player.cash != 1_000_000.0 {
+                                print("⚠️ 경고: 플레이어 현금이 100만원이 아님! 강제 수정")
+                                player.cash = 1_000_000.0
+                                player.holdings.removeAll()
+                                
+                                do {
+                                    try modelContext.save()
+                                    print("✅ 플레이어 상태 강제 수정 완료")
+                                } catch {
+                                    print("❌ 플레이어 상태 수정 실패: \(error)")
+                                }
                             }
                         }
                     }

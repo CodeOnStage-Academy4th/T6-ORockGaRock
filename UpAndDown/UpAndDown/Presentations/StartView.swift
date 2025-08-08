@@ -10,7 +10,7 @@ struct StartView: View {
     let gameTimer: GameTimer
     let priceManager: PriceManager?
     let tradeManager: TradeManager?
-    @Binding var currentPlayer: UUID?
+    @Binding var currentPlayer: Player?
     @Binding var currentGameRecord: GameRecord?
 
 
@@ -102,13 +102,47 @@ struct StartView: View {
             self.router.currentRoute = .game
         }
         
-        // 새 플레이어 생성
+        // 기존 게임용 플레이어들만 삭제 (완료되지 않은 게임들)
+        do {
+            let incompletePlayers = try modelContext.fetch(FetchDescriptor<Player>())
+            let incompleteGameRecords = try modelContext.fetch(FetchDescriptor<GameRecord>(
+                predicate: #Predicate<GameRecord> { record in
+                    !record.isCompleted
+                }
+            ))
+            
+            // 미완료 게임 기록의 플레이어들만 삭제
+            let incompletePlayerIds = Set(incompleteGameRecords.map { $0.playerId })
+            for player in incompletePlayers {
+                if incompletePlayerIds.contains(player.id) {
+                    modelContext.delete(player)
+                }
+            }
+            
+            // 미완료 게임 기록들도 삭제
+            for record in incompleteGameRecords {
+                modelContext.delete(record)
+            }
+            
+            try modelContext.save()
+            print("미완료 게임 데이터 정리 완료")
+        } catch {
+            print("기존 데이터 정리 실패: \(error)")
+        }
+        
+        // 완전히 새로운 플레이어 생성
         let newPlayer = Player(name: "플레이어")
+        // 확실히 100만원으로 설정
+        newPlayer.cash = 1_000_000.0
+        newPlayer.holdings = []
+        
         modelContext.insert(newPlayer)
-        currentPlayer = newPlayer.id
+        currentPlayer = newPlayer
+        
+        print("새 게임 시작: 플레이어 ID=\(newPlayer.id), 현금=\(newPlayer.cash)")
 
-        // 게임 기록 생성
-        currentGameRecord = GameRecord(playerId: newPlayer.id, initialCash: newPlayer.cash)
+        // 새 게임 기록 생성
+        currentGameRecord = GameRecord(playerId: newPlayer.id, initialCash: 1_000_000.0)
         if let gameRecord = currentGameRecord {
             modelContext.insert(gameRecord)
         }
@@ -119,6 +153,8 @@ struct StartView: View {
 
         do {
             try modelContext.save()
+            modelContext.processPendingChanges()
+            print("새 게임 시작 완료")
         } catch {
             print("게임 시작 실패: \(error)")
         }

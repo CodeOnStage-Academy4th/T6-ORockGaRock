@@ -136,6 +136,9 @@ struct SellingTradeView: View {
                             .fontWeight(.semibold)
                            
                     }
+                
+                    LineChartView(data: coin.priceHistory.map(\.price))
+                        .frame(height: 200)
             }
             .padding(.horizontal)
             

@@ -121,11 +121,9 @@ struct CatalogDetailSheetView: View {
         }
     }
     
-    /// 그래프 넣어주세요 ㅠㅠ
     private var centerContents: some View {
-        Rectangle()
-            .fill(.black)
-            .frame(maxWidth: .infinity, maxHeight: 300)
+        LineChartView(data: coin.priceHistory.map(\.price))
+            .frame(height: 200)
     }
     
     /// 코인 인포 + 버튼

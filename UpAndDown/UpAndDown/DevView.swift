@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-struct ContentView: View {
+struct DevView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var coins: [Coin]
     @Query private var players: [Player]
@@ -142,6 +142,6 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    DevView()
         .modelContainer(for: [Coin.self, Player.self, GameRecord.self], inMemory: true)
 }

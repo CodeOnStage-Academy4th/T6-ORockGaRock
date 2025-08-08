@@ -1,6 +1,7 @@
 import SwiftData
 import SwiftUI
 
+
 @Observable
 class AppRouter {
     enum Route {
@@ -37,12 +38,34 @@ struct ContentView: View {
                 )
             case .game:
                 if let player = currentPlayer {
-                    PortfolioView(
-                        player: player,
-                        coins: coins,
-                        tradeManager: tradeManager,
-                        gameTimer: gameTimer
-                    )
+                    TabView {
+                        VStack {
+                            GameTimerView(gameTimer: gameTimer)
+                            PortfolioView(
+                                player: player,
+                                coins: coins,
+                                tradeManager: tradeManager,
+                                gameTimer: gameTimer
+                            )
+                        }
+                        .tabItem {
+                            Image(systemName: "chart.line.uptrend.xyaxis")
+                            Text("거래")
+                        }
+                        
+                        VStack {
+                            GameTimerView(gameTimer: gameTimer)
+                            HoldingView(
+                                player: player,
+                                coins: coins,
+                                tradeManager: tradeManager
+                            )
+                        }
+                        .tabItem {
+                            Image(systemName: "briefcase")
+                            Text("보유")
+                        }
+                    }
                 }
             case .result:
                 ResultView(gameRecord: currentGameRecord)

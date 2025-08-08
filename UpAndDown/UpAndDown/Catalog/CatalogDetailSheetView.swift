@@ -15,10 +15,77 @@ struct CatalogDetailSheetView: View {
     let player: Player?
     let currentPrice: Double
     let holding: CoinHolding?
+    let tradeManager: TradeManager?
+    let priceManager: PriceManager?
+    
+    @Environment(AppRouter.self) private var router
+    @Environment(\.dismiss) private var dismiss
+    @State private var currentView: ViewType = .detail
+    
+    enum ViewType {
+        case detail, buying, selling
+    }
     
     // MARK: - Body
     
     var body: some View {
+        NavigationView {
+            Group {
+                switch currentView {
+                case .detail:
+                    detailView
+                case .buying:
+                    if let player = player,
+                       let tradeManager = tradeManager,
+                       let priceManager = priceManager {
+                        BuyingTradeView(
+                            coin: coin,
+                            player: player,
+                            tradeManager: tradeManager,
+                            priceManager: priceManager,
+                            onTradeComplete: {
+                                currentView = .detail
+                            }
+                        )
+                        .navigationBarBackButtonHidden(true)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button("뒤로") {
+                                    currentView = .detail
+                                }
+                            }
+                        }
+                    }
+                case .selling:
+                    if let player = player,
+                       let tradeManager = tradeManager,
+                       let priceManager = priceManager {
+                        SellingTradeView(
+                            coin: coin,
+                            player: player,
+                            tradeManager: tradeManager,
+                            priceManager: priceManager,
+                            onTradeComplete: {
+                                currentView = .detail
+                            }
+                        )
+                        .navigationBarBackButtonHidden(true)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button("뒤로") {
+                                    currentView = .detail
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle(coin.name)
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+    
+    private var detailView: some View {
         VStack {
             topContentes
             
@@ -109,7 +176,8 @@ struct CatalogDetailSheetView: View {
     private var buttonGroup: some View {
         HStack() {
             Button {
-                
+                print("매도 버튼 클릭")
+                currentView = .selling
             } label: {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
@@ -126,7 +194,8 @@ struct CatalogDetailSheetView: View {
             Spacer()
             
             Button {
-                
+                print("매수 버튼 클릭")
+                currentView = .buying
             } label: {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)

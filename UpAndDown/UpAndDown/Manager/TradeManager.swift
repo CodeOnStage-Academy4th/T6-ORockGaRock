@@ -34,7 +34,7 @@ class TradeManager {
 
     func buyCoin(player: Player, coinId: UUID, amount: Double) -> TradeResult {
         print("TradeManager.buyCoin 호출: amount=\(amount)")
-        
+
         guard amount > 0 else {
             print("TradeManager: 잘못된 수량")
             return .invalidAmount
@@ -44,7 +44,7 @@ class TradeManager {
             print("TradeManager: 코인 가격을 찾을 수 없음")
             return .coinNotFound
         }
-        
+
         print("TradeManager: 현재가=\(currentPrice)")
 
         let totalCost = currentPrice * amount
@@ -137,4 +137,3 @@ class TradeManager {
         return currentPrice * amount
     }
 }
-

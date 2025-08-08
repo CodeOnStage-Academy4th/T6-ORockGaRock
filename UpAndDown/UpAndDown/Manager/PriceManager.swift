@@ -51,7 +51,7 @@ class PriceManager {
 
         // 최소 가격 보장 (0 이하로 떨어지지 않도록)
         let finalPrice = max(newPrice, coin.currentPrice * 0.1)
-        
+
         coin.addPriceRecord(price: finalPrice)
     }
 
@@ -78,7 +78,7 @@ class PriceManager {
 
     func getCoinPrice(coinId: UUID) -> Double? {
         print("PriceManager.getCoinPrice 호출: coinId=\(coinId)")
-        
+
         let request = FetchDescriptor<Coin>(predicate: #Predicate { coin in
             coin.id == coinId
         })

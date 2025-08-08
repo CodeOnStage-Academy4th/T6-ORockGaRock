@@ -5,31 +5,31 @@
 //  Created by 이승진 on 8/8/25.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct CatalogView: View {
-    
     // MARK: - Property
-    
+
     let tradeManager: TradeManager?
     let priceManager: PriceManager?
-    
+    let currentPlayer: Player
+    let gameTimer: GameTimer
+
     @State private var selectedCoin: Coin?
-    @State private var gameTimer = GameTimer()
-    
+
     @Query(sort: [SortDescriptor(\Coin.name, order: .forward)])
     private var coins: [Coin]
 
-    @Query
-    private var players: [Player]
-    
+//    @Query
+//    private var players: [Player]
+
     // MARK: - Body
-    
+
     var body: some View {
         ZStack {
             Color.white01
-                    .ignoresSafeArea()
+                .ignoresSafeArea()
             VStack(spacing: 30) {
                 topContents
                 centerContents
@@ -38,10 +38,10 @@ struct CatalogView: View {
             .sheet(item: $selectedCoin) { coin in
                 CatalogDetailSheetView(
                     coin: coin,
-                    player: players.first,
+                    player: currentPlayer,
                     currentPrice: coin.currentPrice,
-                    holding: players.first?.holdings.isEmpty == false ? 
-                        players.first?.holdings.first(where: { $0.coinId == coin.id }) : nil,
+                    holding: currentPlayer.holdings.isEmpty == false ?
+                        currentPlayer.holdings.first(where: { $0.coinId == coin.id }) : nil,
                     tradeManager: tradeManager,
                     priceManager: priceManager
                 )
@@ -50,7 +50,7 @@ struct CatalogView: View {
             }
         }
     }
-    
+
     /// 타이머 + 총자산
     private var topContents: some View {
         HStack(spacing: .zero) {
@@ -58,20 +58,20 @@ struct CatalogView: View {
                 Text(gameTimer.formattedTime)
                     .font(.title3)
                     .foregroundStyle(.black)
-                
+
                 Image(.clock)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 24, height: 24)
             }
-            
+
             Spacer()
-            
+
             HStack(spacing: 8) {
-                Text(players.first?.totalAssets ?? 0, format: .currency(code: "KRW"))
+                Text(currentPlayer.cash, format: .currency(code: "KRW"))
                     .font(.title3)
                     .foregroundStyle(.black)
-                
+
                 Image(.won)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -79,7 +79,7 @@ struct CatalogView: View {
             }
         }
     }
-    
+
     /// 코인 리스트
     private var centerContents: some View {
         ScrollView {
@@ -89,7 +89,7 @@ struct CatalogView: View {
                         .onTapGesture {
                             selectedCoin = coin
                         }
-                    
+
                     Spacer()
                 }
             }

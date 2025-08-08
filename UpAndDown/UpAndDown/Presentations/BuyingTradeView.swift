@@ -13,48 +13,76 @@ struct BuyingTradeView: View {
     let player: Player
     let tradeManager: TradeManager
     let priceManager: PriceManager
+    let onTradeComplete: (() -> Void)?
     
+    @Environment(AppRouter.self) private var router
     @State private var buyQuantityString: String = ""
     @State private var buyTotalValueString: String = ""
     @State private var isInputInvalid: Bool = false
- 
     
-    private var currentHolding: CoinHolding? {
-        player.holdings.first { $0.coinId == coin.id }
+    // 디버깅을 위한 안전한 접근
+    private var safeBuyQuantityString: String {
+        return buyQuantityString
+    }
+    
+    init(coin: Coin, player: Player, tradeManager: TradeManager, priceManager: PriceManager, onTradeComplete: (() -> Void)? = nil) {
+        self.coin = coin
+        self.player = player
+        self.tradeManager = tradeManager
+        self.priceManager = priceManager
+        self.onTradeComplete = onTradeComplete
     }
     
     private var availableCash: Double {
         player.cash
     }
     
+    // 안전한 수량 계산 함수
+    private func getBuyQuantityDouble() -> Double {
+        guard !buyQuantityString.isEmpty else { return 0 }
+        let cleanString = buyQuantityString.replacingOccurrences(of: ",", with: "")
+        return Double(cleanString) ?? 0
+    }
+    
     private var buyQuantityDouble: Double {
-        Double(buyQuantityString.replacingOccurrences(of: ",", with: "")) ?? 0
+        return getBuyQuantityDouble()
     }
     
     // 보유 코인 기준 가격 변동률 계산
     private var priceChange: (amount: Double, percentage: Double) {
-        guard let holding = currentHolding else {
-            return (0, 0)
+        // SwiftData 관계형 데이터 접근을 안전하게 처리
+        let holdings = player.holdings
+        for holding in holdings {
+            if holding.coinId == coin.id {
+                let purchasePrice = holding.averagePrice
+                let currentPrice = coin.currentPrice
+                let changeAmount = currentPrice - purchasePrice
+                let changePercentage = (changeAmount / purchasePrice) * 100
+                return (changeAmount, changePercentage)
+            }
         }
-        
-        let purchasePrice = holding.averagePrice
-        let currentPrice = coin.currentPrice
-        let changeAmount = currentPrice - purchasePrice
-        let changePercentage = (changeAmount / purchasePrice) * 100
-        
-        return (changeAmount, changePercentage)
+        return (0, 0)
     }
 
     
     var body: some View {
-        VStack{
-        
-            VStack(alignment: .leading, spacing: 20) {
-                
-                Text(coin.name)
-                    .fontWeight(.semibold)
-                    .font(.system(size: 28))
-                    .padding(.top)
+        NavigationView {
+            VStack{
+            
+                VStack(alignment: .leading, spacing: 20) {
+                    
+                    Text(coin.name)
+                        .fontWeight(.semibold)
+                        .font(.system(size: 28))
+                        .padding(.top)
+                        .onAppear {
+                            print("BuyingTradeView 로드됨")
+                            print("플레이어 현금: \(player.cash)")
+                            print("플레이어 ID: \(player.id)")
+                            print("플레이어 이름: \(player.name)")
+                            print("코인 이름: \(coin.name)")
+                            print("코인 현재가: \(coin.currentPrice)")
+                        }
                 HStack {
                     Text("주문가능 금액")
                         .font(.system(size: 18))
@@ -155,10 +183,13 @@ struct BuyingTradeView: View {
                 .foregroundColor(.white)
                 .cornerRadius(8)
                 .font(.system(size: 18, weight: .bold))
-                .disabled(buyQuantityDouble <= 0 || isInputInvalid)
+                .disabled(getBuyQuantityDouble() <= 0 || isInputInvalid)
             }
             .padding(.horizontal)
             .padding(.bottom, 34)
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
         }
         .onTapGesture {
             hideKeyboard()
@@ -228,17 +259,41 @@ struct BuyingTradeView: View {
     }
     
     private func executeBuy() {
-        guard buyQuantityDouble > 0 else { return }
+        // 직접 계산하여 브레이크포인트 회피
+        let cleanQuantityString = buyQuantityString.replacingOccurrences(of: ",", with: "")
+        guard let quantity = Double(cleanQuantityString), quantity > 0 else { 
+            print("매수 실패: 수량이 0 이하 또는 잘못된 입력")
+            return 
+        }
         
-        let result = tradeManager.buyCoin(player: player, coinId: coin.id, amount: buyQuantityDouble)
+        print("매수 시도: 코인 \(coin.name), 수량 \(quantity), 현재가 \(coin.currentPrice)")
+        print("플레이어 현금: \(player.cash)")
+        print("총 비용: \(quantity * coin.currentPrice)")
+        
+        let result = tradeManager.buyCoin(player: player, coinId: coin.id, amount: quantity)
         
         switch result {
         case .success:
+            print("매수 성공!")
             // 입력 필드 초기화
             buyQuantityString = ""
             buyTotalValueString = ""
+            // completion handler 호출 또는 게임 화면으로 돌아가기
+            if let onTradeComplete = onTradeComplete {
+                onTradeComplete()
+            } else {
+                router.currentRoute = .game
+            }
+        case .insufficientFunds:
+            print("매수 실패: 보유 현금 부족")
+        case .invalidAmount:
+            print("매수 실패: 올바르지 않은 수량")
+        case .coinNotFound:
+            print("매수 실패: 코인을 찾을 수 없음")
+        case .error(let message):
+            print("매수 실패: \(message)")
         default:
-            break
+            print("매수 실패: 알 수 없는 오류")
         }
     }
 }

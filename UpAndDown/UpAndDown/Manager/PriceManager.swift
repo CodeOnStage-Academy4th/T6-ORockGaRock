@@ -76,15 +76,19 @@ class PriceManager {
     }
 
     func getCoinPrice(coinId: UUID) -> Double? {
+        print("PriceManager.getCoinPrice 호출: coinId=\(coinId)")
+        
         let request = FetchDescriptor<Coin>(predicate: #Predicate { coin in
             coin.id == coinId
         })
 
         do {
             let coins = try modelContext.fetch(request)
-            return coins.first?.currentPrice
+            let price = coins.first?.currentPrice
+            print("PriceManager: 코인 가격 조회 결과=\(price ?? 0)")
+            return price
         } catch {
-            print("코인 가격 조회 실패: \(error)")
+            print("PriceManager: 코인 가격 조회 실패: \(error)")
             return nil
         }
     }

@@ -5,6 +5,8 @@ struct HoldingView: View {
     @Bindable var player: Player
     let coins: [Coin]
     let tradeManager: TradeManager?
+    let gameTimer: GameTimer
+    let currentPlayer: Player
 
     @State private var showingTradeResult = false
     @State private var tradeResultMessage = ""
@@ -40,6 +42,8 @@ struct HoldingView: View {
             Color.white01
                 .ignoresSafeArea()
             VStack(spacing: 10) {
+                topContents
+                
                 // 보유 자산 요약
                 VStack(spacing: 15) {
                     Text("총 자산")
@@ -102,6 +106,35 @@ struct HoldingView: View {
                 Text(tradeResultMessage)
             }
         }
+    }
+    private var topContents: some View {
+        HStack(spacing: .zero) {
+            HStack(spacing: .zero) {
+                Text(gameTimer.formattedTime)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(.black)
+                    .frame(width: 70)
+
+                Image(.clock)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
+            }
+
+            Spacer()
+
+            HStack(spacing: 8) {
+                Text(currentPlayer.cash, format: .currency(code: "KRW"))
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(.black)
+
+                Image(.won)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
+            }
+        }
+        .padding(.horizontal, 16)
     }
 }
 
@@ -212,27 +245,27 @@ struct HoldingRowView: View {
 }
 
 #Preview {
-    let schema = Schema([
-        Coin.self,
-        PriceRecord.self,
-        Player.self,
-        CoinHolding.self,
-        GameRecord.self,
-    ])
-    let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: schema, configurations: [modelConfiguration])
-
-    let player = Player(name: "테스트")
-    let coin = Coin(name: "비트코인", symbol: "BTC", currentPrice: 50_000_000.0)
-    player.addHolding(coinId: coin.id, quantity: 0.001, purchasePrice: 48_000_000.0)
-
-    container.mainContext.insert(player)
-    container.mainContext.insert(coin)
-
-    return HoldingView(
-        player: player,
-        coins: [coin],
-        tradeManager: nil
-    )
-    .modelContainer(container)
+//    let schema = Schema([
+//        Coin.self,
+//        PriceRecord.self,
+//        Player.self,
+//        CoinHolding.self,
+//        GameRecord.self,
+//    ])
+//    let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+//    let container = try! ModelContainer(for: schema, configurations: [modelConfiguration])
+//
+//    let player = Player(name: "테스트")
+//    let coin = Coin(name: "비트코인", symbol: "BTC", currentPrice: 50_000_000.0)
+//    player.addHolding(coinId: coin.id, quantity: 0.001, purchasePrice: 48_000_000.0)
+//
+//    container.mainContext.insert(player)
+//    container.mainContext.insert(coin)
+//
+//    return HoldingView(
+//        player: player,
+//        coins: [coin],
+//        tradeManager: nil,
+//    )
+//    .modelContainer(container)
 }

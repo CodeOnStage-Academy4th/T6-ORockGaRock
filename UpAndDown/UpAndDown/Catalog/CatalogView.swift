@@ -54,10 +54,11 @@ struct CatalogView: View {
     /// 타이머 + 총자산
     private var topContents: some View {
         HStack(spacing: .zero) {
-            HStack(spacing: 8) {
+            HStack(spacing: .zero) {
                 Text(gameTimer.formattedTime)
-                    .font(.title3)
+                    .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(.black)
+                    .frame(width: 70)
 
                 Image(.clock)
                     .resizable()
@@ -69,7 +70,7 @@ struct CatalogView: View {
 
             HStack(spacing: 8) {
                 Text(currentPlayer.cash, format: .currency(code: "KRW"))
-                    .font(.title3)
+                    .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(.black)
 
                 Image(.won)

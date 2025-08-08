@@ -13,10 +13,8 @@ struct StartView: View {
     @Binding var currentPlayer: Player?
     @Binding var currentGameRecord: GameRecord?
 
-
     var body: some View {
         VStack {
-
             Spacer()
 
             title
@@ -101,7 +99,7 @@ struct StartView: View {
             // 토스트가 끝난 후 게임 화면으로 이동
             self.router.currentRoute = .game
         }
-        
+
         // 기존 게임용 플레이어들만 삭제 (완료되지 않은 게임들)
         do {
             let incompletePlayers = try modelContext.fetch(FetchDescriptor<Player>())
@@ -110,7 +108,7 @@ struct StartView: View {
                     !record.isCompleted
                 }
             ))
-            
+
             // 미완료 게임 기록의 플레이어들만 삭제
             let incompletePlayerIds = Set(incompleteGameRecords.map { $0.playerId })
             for player in incompletePlayers {
@@ -118,27 +116,27 @@ struct StartView: View {
                     modelContext.delete(player)
                 }
             }
-            
+
             // 미완료 게임 기록들도 삭제
             for record in incompleteGameRecords {
                 modelContext.delete(record)
             }
-            
+
             try modelContext.save()
             print("미완료 게임 데이터 정리 완료")
         } catch {
             print("기존 데이터 정리 실패: \(error)")
         }
-        
+
         // 완전히 새로운 플레이어 생성
         let newPlayer = Player(name: "플레이어")
         // 확실히 100만원으로 설정
         newPlayer.cash = 1_000_000.0
         newPlayer.holdings = []
-        
+
         modelContext.insert(newPlayer)
         currentPlayer = newPlayer
-        
+
         print("새 게임 시작: 플레이어 ID=\(newPlayer.id), 현금=\(newPlayer.cash)")
 
         // 새 게임 기록 생성
@@ -160,8 +158,9 @@ struct StartView: View {
         }
     }
 }
+
 //
-//#Preview {
+// #Preview {
 //    let schema = Schema([
 //        Coin.self,
 //        PriceRecord.self,
@@ -201,4 +200,4 @@ struct StartView: View {
 ////        currentGameRecord: $currentGameRecord
 ////    )
 ////    .modelContainer(container)
-//}
+// }

@@ -5,8 +5,8 @@
 //  Created by 양시준 on 8/8/25.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 @main
 struct UpAndDownApp: App {

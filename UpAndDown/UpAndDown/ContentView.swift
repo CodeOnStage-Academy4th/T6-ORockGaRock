@@ -143,5 +143,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [Item.self, Coin.self, Player.self, GameRecord.self], inMemory: true)
+        .modelContainer(for: [Coin.self, Player.self, GameRecord.self], inMemory: true)
 }

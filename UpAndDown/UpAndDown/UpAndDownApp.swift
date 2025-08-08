@@ -12,7 +12,6 @@ import SwiftData
 struct UpAndDownApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
             Coin.self,
             PriceRecord.self,
             Player.self,

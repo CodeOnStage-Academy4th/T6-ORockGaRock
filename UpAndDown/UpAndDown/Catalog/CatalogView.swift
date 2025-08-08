@@ -14,6 +14,7 @@ struct CatalogView: View {
     
     let tradeManager: TradeManager?
     let priceManager: PriceManager?
+    let currentPlayer: Player
     
     @State private var selectedCoin: Coin?
     @State private var gameTimer = GameTimer()
@@ -21,8 +22,8 @@ struct CatalogView: View {
     @Query(sort: [SortDescriptor(\Coin.name, order: .forward)])
     private var coins: [Coin]
 
-    @Query
-    private var players: [Player]
+//    @Query
+//    private var players: [Player]
     
     // MARK: - Body
     
@@ -37,14 +38,14 @@ struct CatalogView: View {
             .padding(.horizontal, 16)
             .sheet(item: $selectedCoin) { coin in
                 CatalogDetailSheetView(
-                    coin: coin,
-                    player: players.first,
-                    currentPrice: coin.currentPrice,
-                    holding: players.first?.holdings.isEmpty == false ? 
-                        players.first?.holdings.first(where: { $0.coinId == coin.id }) : nil,
-                    tradeManager: tradeManager,
-                    priceManager: priceManager
-                )
+                      coin: coin,
+                      player: currentPlayer,
+                      currentPrice: coin.currentPrice,
+                      holding: currentPlayer.holdings.isEmpty == false ?
+                          currentPlayer.holdings.first(where: { $0.coinId == coin.id }) : nil,
+                      tradeManager: tradeManager,
+                      priceManager: priceManager
+                  )
                 .presentationDetents([.fraction(0.95)])
                 .presentationDragIndicator(.visible)
             }
@@ -68,7 +69,7 @@ struct CatalogView: View {
             Spacer()
             
             HStack(spacing: 8) {
-                Text(players.first?.totalAssets ?? 0, format: .currency(code: "KRW"))
+              Text(currentPlayer.cash, format: .currency(code: "KRW"))
                     .font(.title3)
                     .foregroundStyle(.black)
                 
@@ -80,6 +81,7 @@ struct CatalogView: View {
         }
     }
     
+  
     /// 코인 리스트
     private var centerContents: some View {
         ScrollView {

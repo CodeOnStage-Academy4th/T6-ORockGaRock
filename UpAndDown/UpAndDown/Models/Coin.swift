@@ -16,16 +16,16 @@ final class Coin {
     var currentPrice: Double
     var priceHistory: [PriceRecord]
     var createdAt: Date
-    
+
     init(name: String, symbol: String, currentPrice: Double) {
-        self.id = UUID()
+        id = UUID()
         self.name = name
         self.symbol = symbol
         self.currentPrice = currentPrice
-        self.priceHistory = [PriceRecord(price: currentPrice, timestamp: Date())]
-        self.createdAt = Date()
+        priceHistory = [PriceRecord(price: currentPrice, timestamp: Date())]
+        createdAt = Date()
     }
-    
+
     func addPriceRecord(price: Double) {
         currentPrice = price
         priceHistory.append(PriceRecord(price: price, timestamp: Date()))
@@ -37,9 +37,9 @@ final class PriceRecord {
     var id: UUID
     var price: Double
     var timestamp: Date
-    
+
     init(price: Double, timestamp: Date) {
-        self.id = UUID()
+        id = UUID()
         self.price = price
         self.timestamp = timestamp
     }

@@ -42,7 +42,8 @@ final class Player {
     }
 
     func removeHolding(coinId: UUID, quantity: Double) -> Bool {
-        guard let holding = holdings.first(where: { $0.coinId == coinId }),
+        guard !holdings.isEmpty,
+              let holding = holdings.first(where: { $0.coinId == coinId }),
               holding.quantity >= quantity
         else {
             return false

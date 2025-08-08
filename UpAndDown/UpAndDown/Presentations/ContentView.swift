@@ -5,6 +5,9 @@ import SwiftUI
 class AppRouter {
     enum Route {
         case start, game, result
+        case buyingtrade(Coin)
+        case sellingtrade(Coin)
+        case catalog(Coin)
     }
 
     var currentRoute: Route = .start
@@ -20,57 +23,98 @@ struct ContentView: View {
     @State private var gameTimer = GameTimer()
     @State private var priceManager: PriceManager?
     @State private var tradeManager: TradeManager?
-    @State private var currentPlayer: Player?
+    @State private var currentPlayerId: UUID?
     @State private var currentGameRecord: GameRecord?
+    @StateObject private var toastManager = ToastManager()
+    
+    // 현재 플레이어를 Query로 가져오기
+    private var currentPlayer: Player? {
+        guard let playerId = currentPlayerId else { return nil }
+        let request = FetchDescriptor<Player>(predicate: #Predicate<Player> { player in
+            player.id == playerId
+        })
+        do {
+            let players = try modelContext.fetch(request)
+            return players.first
+        } catch {
+            print("현재 플레이어 조회 실패: \(error)")
+            return nil
+        }
+    }
+   
 
     var body: some View {
-        Group {
-            switch router.currentRoute {
-            case .start:
-                StartView(
-                    router: router,
-                    gameTimer: gameTimer,
-                    priceManager: priceManager,
-                    tradeManager: tradeManager,
-                    currentPlayer: $currentPlayer,
-                    currentGameRecord: $currentGameRecord
-                )
-            case .game:
-                if let player = currentPlayer {
-                    TabView {
-                        VStack {
-                            GameTimerView(gameTimer: gameTimer)
-                            PortfolioView(
-                                player: player,
-                                coins: coins,
-                                tradeManager: tradeManager,
-                                gameTimer: gameTimer
-                            )
-                        }
-                        .tabItem {
-                            Image(systemName: "chart.line.uptrend.xyaxis")
-                            Text("거래")
-                        }
-
-                        VStack {
-                            GameTimerView(gameTimer: gameTimer)
-                            HoldingView(
-                                player: player,
-                                coins: coins,
-                                tradeManager: tradeManager
-                            )
-                        }
-                        .tabItem {
-                            Image(systemName: "briefcase")
-                            Text("보유")
+        ZStack {
+            Group {
+                switch router.currentRoute {
+                case .start:
+                    StartView(
+                        router: router,
+                        gameTimer: gameTimer,
+                        priceManager: priceManager,
+                        tradeManager: tradeManager,
+                        currentPlayer: $currentPlayerId,
+                        currentGameRecord: $currentGameRecord
+                    )
+                case .game:
+                    if let player = currentPlayer {
+                        
+                        TabView {
+                            VStack {
+                                GameTimerView(gameTimer: gameTimer)
+                                CatalogView(
+                                    tradeManager: tradeManager,
+                                    priceManager: priceManager
+                                )
+                            }
+                            .tabItem {
+                                Image(systemName: "list.bullet")
+                                Text("목록")
+                            }
+                            
+                            VStack {
+                                GameTimerView(gameTimer: gameTimer)
+                                HoldingView(
+                                    player: player,
+                                    coins: coins,
+                                    tradeManager: tradeManager
+                                )
+                            }
+                            .tabItem {
+                                Image(systemName: "briefcase")
+                                Text("보유")
+                            }
                         }
                     }
+                case .result:
+                    ResultView(gameRecord: currentGameRecord)
+                case .buyingtrade(let coin):
+                    if let player = currentPlayer, let tm = tradeManager, let pm = priceManager {
+                        BuyingTradeView(coin: coin, player: player, tradeManager: tm, priceManager: pm)
+                    }
+                case .sellingtrade(let coin):
+                    if let player = currentPlayer, let tm = tradeManager, let pm = priceManager {
+                        SellingTradeView(coin: coin, player: player, tradeManager: tm, priceManager: pm)
+                    }
+                case .catalog(let coin):
+                    CatalogView(tradeManager: tradeManager, priceManager: priceManager)
                 }
-            case .result:
-                ResultView(gameRecord: currentGameRecord)
             }
+            .environment(router)
+            .environmentObject(toastManager)
+            
+            // 토스트 뷰를 최상단에 표시
+            VStack {
+                Spacer()
+                ToastView(
+                    title: toastManager.title,
+                    description: toastManager.description,
+                    isVisible: toastManager.isVisible
+                )
+                Spacer()
+            }
+            .allowsHitTesting(false) // 터치 이벤트가 뒤의 뷰로 전달되도록
         }
-        .environment(router)
         .onAppear {
             setupGame()
         }
@@ -96,6 +140,16 @@ struct ContentView: View {
     private func endGame() {
         priceManager?.stopPriceUpdates()
 
+        // 게임 종료 토스트 표시
+        toastManager.showToast(
+            title: "게임 종료!",
+            description: "결과를 확인해보세요",
+            duration: 2.0
+        ) {
+            // 토스트가 끝난 후 결과 화면으로 이동
+            self.router.currentRoute = .result
+        }
+
         // 게임 기록 완료
         if let player = currentPlayer,
            let gameRecord = currentGameRecord
@@ -108,8 +162,6 @@ struct ContentView: View {
                 print("게임 종료 기록 실패: \(error)")
             }
         }
-
-        router.currentRoute = .result
     }
 }
 

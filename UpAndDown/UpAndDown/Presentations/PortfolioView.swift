@@ -11,6 +11,7 @@ struct PortfolioView: View {
     @State private var tradeAmount: String = ""
     @State private var showingTradeResult = false
     @State private var tradeResultMessage = ""
+   
 
     var body: some View {
         VStack(spacing: 16) {
@@ -126,6 +127,7 @@ struct CoinRowView: View {
                 Button("매도") {
                     isSellingMode = true
                     showingTradeSheet = true
+
                 }
                 .buttonStyle(.bordered)
                 .tint(.red)

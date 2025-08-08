@@ -47,7 +47,8 @@ struct ContentView: View {
                                 GameTimerView(gameTimer: gameTimer)
                                 CatalogView(
                                     tradeManager: tradeManager,
-                                    priceManager: priceManager
+                                    priceManager: priceManager,
+                                    currentPlayer: player
                                 )
                             }
                             .tabItem {
@@ -98,7 +99,13 @@ struct ContentView: View {
                         SellingTradeView(coin: coin, player: player, tradeManager: tm, priceManager: pm)
                     }
                 case .catalog(let coin):
-                    CatalogView(tradeManager: tradeManager, priceManager: priceManager)
+                    if let player = currentPlayer {
+                          CatalogView(
+                              tradeManager: tradeManager,
+                              priceManager: priceManager,
+                              currentPlayer: player
+                          )
+                      }
                 }
             }
             .environment(router)

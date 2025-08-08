@@ -19,27 +19,27 @@ final class GameRecord {
     var profit: Double
     var profitRate: Double
     var isCompleted: Bool
-    
+
     init(playerId: UUID, initialCash: Double) {
-        self.id = UUID()
+        id = UUID()
         self.playerId = playerId
-        self.startDate = Date()
-        self.endDate = nil
+        startDate = Date()
+        endDate = nil
         self.initialCash = initialCash
-        self.finalAssets = 0.0
-        self.profit = 0.0
-        self.profitRate = 0.0
-        self.isCompleted = false
+        finalAssets = 0.0
+        profit = 0.0
+        profitRate = 0.0
+        isCompleted = false
     }
-    
+
     func completeGame(finalAssets: Double) {
-        self.endDate = Date()
+        endDate = Date()
         self.finalAssets = finalAssets
-        self.profit = finalAssets - initialCash
-        self.profitRate = (profit / initialCash) * 100
-        self.isCompleted = true
+        profit = finalAssets - initialCash
+        profitRate = (profit / initialCash) * 100
+        isCompleted = true
     }
-    
+
     var gameDuration: TimeInterval? {
         guard let endDate = endDate else { return nil }
         return endDate.timeIntervalSince(startDate)

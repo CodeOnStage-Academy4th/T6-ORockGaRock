@@ -10,9 +10,10 @@ import SwiftData
 
 struct AssetView: View {
     @Bindable var player: Player
-    let gameTimer: GameTimer
+//    let gameTimer: GameTimer
     
-    @Query var coins: [Coin]
+    /*@Query */var coins: [Coin]
+    let tradeManager: TradeManager?
     
     private var assetChangePercentage: Double {
         ((player.totalAssets / 1_000_000) * 100) - 100
@@ -62,32 +63,6 @@ struct AssetView: View {
                 }
                 .padding()
                 .background(.black)
-                
-                // UI 테스트용 mock data
-//                HStack(spacing: 8) {
-//                    VStack(alignment: .leading, spacing: 4){
-//                        Text("코인이름")
-//                            .font(.headline)
-//                        Text("현재 가격: ₩0")
-//                            .font(.caption)
-//                    }
-//                    .foregroundColor(.white)
-//                    Spacer()
-//                    VStack(alignment: .trailing, spacing: 4){
-//                        Text("평균 매입가: ₩0")
-//                            .font(.caption)
-//                            .foregroundColor(.white)
-//                        Text("총 가치: ₩0")
-//                            .font(.subheadline)
-//                            .foregroundColor(.white)
-//                        Text("+1%")
-//                            .font(.caption)
-//                            .foregroundColor(.red)
-//                    }
-//                }
-//                .padding()
-//                .background(.black)
-                
                 
                 ForEach(player.holdings, id: \.id) { holding in
                     if let coin = coins.first(where: { $0.id == holding.coinId }) {
@@ -142,8 +117,8 @@ private struct HoldingRow: View {
 }
 
 #Preview {
-    AssetView(
-        player: Player(name: "테스트"),
-        gameTimer: GameTimer()
-    )
+//    AssetView(
+//        player: Player(name: "테스트"),
+//        gameTimer: GameTimer()
+//    )
 }

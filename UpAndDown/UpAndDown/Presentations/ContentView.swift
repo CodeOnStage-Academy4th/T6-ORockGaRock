@@ -5,6 +5,8 @@ import SwiftUI
 class AppRouter {
     enum Route {
         case start, game, result
+        case buyingtrade(Coin)
+        case sellingtrade(Coin)
     }
 
     var currentRoute: Route = .start
@@ -72,7 +74,14 @@ struct ContentView: View {
                     }
                 case .result:
                     ResultView(gameRecord: currentGameRecord)
-                }
+                case .buyingtrade(let coin):
+                    if let player = currentPlayer, let tm = tradeManager, let pm = priceManager {
+                        BuyingTradeView(coin: coin, player: player, tradeManager: tm, priceManager: pm)
+                    }
+                case .sellingtrade(let coin):
+                    if let player = currentPlayer, let tm = tradeManager, let pm = priceManager {
+                        SellingTradeView(coin: coin, player: player, tradeManager: tm, priceManager: pm)
+                    }                }
             }
             .environment(router)
             .environmentObject(toastManager)

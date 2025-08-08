@@ -24,7 +24,8 @@ struct ResultView: View {
             gameRecordInfo
 
             Spacer()
-
+            bottomText
+          
             againButton
         }
         .padding()
@@ -55,7 +56,37 @@ struct ResultView: View {
             router.currentRoute = .start
         }
         .buttonStyle(.borderedProminent)
+        .tint(.black)
     }
+  
+  private var bottomText: some View {
+      FallingTextView()
+  }
+
+struct FallingTextView: View {
+    @State private var fall = false
+
+    var body: some View {
+        ZStack {
+            Text("나")
+                .font(.system(size: 220, weight: .black))
+                .rotationEffect(.degrees(-20))
+                .offset(x: -50, y: fall ? -250 : -300)
+                .animation(.interpolatingSpring(stiffness: 70, damping: 8).delay(0.1), value: fall)
+
+            Text("락")
+                .font(.system(size: 220, weight: .black))
+                .rotationEffect(.degrees(20))
+                .offset(x: 40, y: fall ? -20 : -300)
+                .animation(.interpolatingSpring(stiffness: 70, damping: 8).delay(0.2), value: fall)
+        }
+        .onAppear {
+            fall = true
+        }
+    }
+}
+  
+  
 }
 
 #Preview {

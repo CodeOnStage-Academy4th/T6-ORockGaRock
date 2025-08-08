@@ -1,5 +1,5 @@
 //
-//  SellingTradeView.swift
+//  BuyingTradeView.swift
 //  UpAndDown
 //
 //  Created by kim yijun on 8/9/25.
@@ -8,15 +8,14 @@
 import SwiftUI
 import SwiftData
 
-struct SellingTradeView: View {
+struct BuyingTradeView: View {
     let coin: Coin
     let player: Player
     let tradeManager: TradeManager
     let priceManager: PriceManager
- 
     
-    @State private var sellQuantityString: String = ""
-    @State private var sellTotalValueString: String = ""
+    @State private var buyQuantityString: String = ""
+    @State private var buyTotalValueString: String = ""
     @State private var isInputInvalid: Bool = false
  
     
@@ -24,16 +23,12 @@ struct SellingTradeView: View {
         player.holdings.first { $0.coinId == coin.id }
     }
     
-    private var holdingAmount: Double {
-        currentHolding?.quantity ?? 0
+    private var availableCash: Double {
+        player.cash
     }
     
-    private var holdingValue: Double {
-        holdingAmount * coin.currentPrice
-    }
-    
-    private var sellQuantityDouble: Double {
-        Double(sellQuantityString.replacingOccurrences(of: ",", with: "")) ?? 0
+    private var buyQuantityDouble: Double {
+        Double(buyQuantityString.replacingOccurrences(of: ",", with: "")) ?? 0
     }
     
     // 보유 코인 기준 가격 변동률 계산
@@ -56,16 +51,16 @@ struct SellingTradeView: View {
         
             VStack(alignment: .leading, spacing: 20) {
                 
-                Text("매도")
+                Text(coin.name)
                     .fontWeight(.semibold)
                     .font(.system(size: 28))
                     .padding(.top)
                 HStack {
-                    Text("보유 금액")
+                    Text("주문가능 금액")
                         .font(.system(size: 18))
                         .fontWeight(.semibold)
                     Spacer()
-                    Text("₩\(formatNumber(holdingValue))")
+                    Text("₩\(formatNumber(availableCash))")
                         .font(.system(size: 18))
                         .fontWeight(.semibold)
                 }
@@ -95,12 +90,12 @@ struct SellingTradeView: View {
                 }
                 
                     HStack {
-                        Text("매도 수량")
+                        Text("매수 수량")
                             .font(.system(size: 18))
                             .fontWeight(.semibold)
                            
                         
-                        TextField("수량을 입력하세요", text: $sellQuantityString)
+                        TextField("수량을 입력하세요", text: $buyQuantityString)
                             .keyboardType(.decimalPad)
                             .textFieldStyle(PlainTextFieldStyle())
                             .multilineTextAlignment(.trailing)
@@ -112,11 +107,11 @@ struct SellingTradeView: View {
                     }
                     
                     HStack {
-                        Text("매도 총액")
+                        Text("매수 총액")
                             .font(.system(size: 18))
                             .fontWeight(.semibold)
                         
-                        TextField("총액을 입력하세요", text: $sellTotalValueString)
+                        TextField("총액을 입력하세요", text: $buyTotalValueString)
                             .keyboardType(.decimalPad)
                             .textFieldStyle(PlainTextFieldStyle())
                             .multilineTextAlignment(.trailing)
@@ -130,7 +125,7 @@ struct SellingTradeView: View {
             
            
             if isInputInvalid {
-                Text("보유 수량을 초과할 수 없습니다.")
+                Text("주문가능 금액을 초과할 수 없습니다.")
                     .font(.caption)
                     .foregroundColor(.red)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -140,10 +135,11 @@ struct SellingTradeView: View {
             
             Spacer()
             
-            // 매도 버튼
+            // 매수 버튼
             HStack(spacing: 16) {
                 Button("올인") {
-                    sellQuantityString = formatNumber(holdingAmount, fractionDigits: 6)
+                    let maxQuantity = availableCash / coin.currentPrice
+                    buyQuantityString = formatNumber(maxQuantity, fractionDigits: 6)
                 }
                 .frame(width: 120, height: 60)
                 .background(Color.gray)
@@ -151,15 +147,15 @@ struct SellingTradeView: View {
                 .cornerRadius(8)
                 .font(.system(size: 16, weight: .semibold))
                 
-                Button("매도") {
-                    executeSell()
+                Button("매수") {
+                    executeBuy()
                 }
                 .frame(maxWidth: .infinity, minHeight: 60)
-                .background(Color.blue)
+                .background(Color.red)
                 .foregroundColor(.white)
                 .cornerRadius(8)
                 .font(.system(size: 18, weight: .bold))
-                .disabled(sellQuantityDouble <= 0 || isInputInvalid)
+                .disabled(buyQuantityDouble <= 0 || isInputInvalid)
             }
             .padding(.horizontal)
             .padding(.bottom, 34)
@@ -168,54 +164,52 @@ struct SellingTradeView: View {
             hideKeyboard()
         }
         // 수량 입력 시 총액 자동 계산 및 유효성 검사
-        .onChange(of: sellQuantityString) { oldValue, newValue in
+        .onChange(of: buyQuantityString) { oldValue, newValue in
             let cleanValue = newValue.replacingOccurrences(of: ",", with: "")
             guard let quantity = Double(cleanValue) else {
-                sellTotalValueString = ""
+                buyTotalValueString = ""
                 isInputInvalid = false // 숫자가 아니면 초기화
                 return
             }
             
-           
-            isInputInvalid = quantity > holdingAmount
-            
             let totalValue = quantity * coin.currentPrice
+            isInputInvalid = totalValue > availableCash
+            
             let formattedTotalValue = formatNumber(totalValue)
             
-            if sellTotalValueString != formattedTotalValue {
-                sellTotalValueString = formattedTotalValue
+            if buyTotalValueString != formattedTotalValue {
+                buyTotalValueString = formattedTotalValue
             }
             
             let formattedQuantity = formatNumber(quantity, fractionDigits: 6)
             if newValue != formattedQuantity {
                 DispatchQueue.main.async {
-                    self.sellQuantityString = formattedQuantity
+                    self.buyQuantityString = formattedQuantity
                 }
             }
         }
         // 총액 입력 시 수량 자동 계산 및 유효성 검사
-        .onChange(of: sellTotalValueString) { oldValue, newValue in
+        .onChange(of: buyTotalValueString) { oldValue, newValue in
             let cleanValue = newValue.replacingOccurrences(of: ",", with: "")
             guard let totalValue = Double(cleanValue), coin.currentPrice > 0 else {
-                sellQuantityString = ""
+                buyQuantityString = ""
                 isInputInvalid = false // 숫자가 아니면 초기화
                 return
             }
             
+            isInputInvalid = totalValue > availableCash
+            
             let quantity = totalValue / coin.currentPrice
-            
-            isInputInvalid = quantity > holdingAmount
-            
             let formattedQuantity = formatNumber(quantity, fractionDigits: 6)
             
-            if sellQuantityString != formattedQuantity {
-                sellQuantityString = formattedQuantity
+            if buyQuantityString != formattedQuantity {
+                buyQuantityString = formattedQuantity
             }
             
             let formattedTotalValue = formatNumber(totalValue)
             if newValue != formattedTotalValue {
                 DispatchQueue.main.async {
-                    self.sellTotalValueString = formattedTotalValue
+                    self.buyTotalValueString = formattedTotalValue
                 }
             }
         }
@@ -233,16 +227,16 @@ struct SellingTradeView: View {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
-    private func executeSell() {
-        guard sellQuantityDouble > 0 else { return }
+    private func executeBuy() {
+        guard buyQuantityDouble > 0 else { return }
         
-        let result = tradeManager.sellCoin(player: player, coinId: coin.id, amount: sellQuantityDouble)
+        let result = tradeManager.buyCoin(player: player, coinId: coin.id, amount: buyQuantityDouble)
         
         switch result {
         case .success:
-            
-            sellQuantityString = ""
-            sellTotalValueString = ""
+            // 입력 필드 초기화
+            buyQuantityString = ""
+            buyTotalValueString = ""
         default:
             break
         }
@@ -258,12 +252,11 @@ struct SellingTradeView: View {
     
     let coin = Coin(name: "코인", symbol: "MSC", currentPrice: 120000)
     let player = Player(name: "테스트", initialCash: 1000000)
-    player.addHolding(coinId: coin.id, quantity: 2, purchasePrice: 120000)
     
     let priceManager = PriceManager(modelContext: context)
     let tradeManager = TradeManager(modelContext: context, priceManager: priceManager)
     
-    return SellingTradeView(
+    return BuyingTradeView(
         coin: coin,
         player: player,
         tradeManager: tradeManager,

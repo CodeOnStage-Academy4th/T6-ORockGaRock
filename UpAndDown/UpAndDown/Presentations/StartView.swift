@@ -79,14 +79,32 @@ struct StartView: View {
     }
 
     private var startButton: some View {
-        Button("게임 시작") {
+        Button {
             startGame()
+        } label: {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(.black)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+
+                Text("게임 시작")
+                    .padding(40)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+            .contentShape(Rectangle())
         }
-        .font(.title2)
-        .padding()
-        .background(Color.black)
-        .foregroundColor(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 0))
+        .padding(.horizontal, 16)
+        
+//        Button("게임 시작") {
+//            startGame()
+//        }
+//        .font(.title2)
+//        .padding()
+//        .background(Color.black)
+//        .foregroundColor(.white)
+//        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private func startGame() {

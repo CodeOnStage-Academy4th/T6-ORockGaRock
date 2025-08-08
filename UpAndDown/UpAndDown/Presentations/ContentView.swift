@@ -37,7 +37,7 @@ struct ContentView: View {
                 )
             case .game:
                 if let player = currentPlayer {
-                    GameView(
+                    PortfolioView(
                         player: player,
                         coins: coins,
                         tradeManager: tradeManager,

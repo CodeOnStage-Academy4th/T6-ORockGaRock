@@ -1,14 +1,7 @@
-//
-//  GameView.swift
-//  UpAndDown
-//
-//  Created by 양시준 on 8/8/25.
-//
-
 import SwiftData
 import SwiftUI
 
-struct GameView: View {
+struct PortfolioView: View {
     @Bindable var player: Player
     let coins: [Coin]
     let tradeManager: TradeManager?
@@ -277,7 +270,7 @@ struct TradeSheetView: View {
 }
 
 #Preview {
-    GameView(
+    PortfolioView(
         player: Player(name: "테스트"),
         coins: [],
         tradeManager: nil,

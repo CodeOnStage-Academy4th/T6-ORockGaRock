@@ -62,7 +62,7 @@ struct DevView: View {
                 } else {
                     // 게임 진행 화면
                     if let player = currentPlayer {
-                        GameView(
+                        PortfolioView(
                             player: player,
                             coins: coins,
                             tradeManager: tradeManager,

@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 @Observable
 class PriceManager {
@@ -51,7 +52,9 @@ class PriceManager {
         // 최소 가격 보장 (0 이하로 떨어지지 않도록)
         let finalPrice = max(newPrice, coin.currentPrice * 0.1)
         
-        coin.addPriceRecord(price: finalPrice)
+        withAnimation {
+            coin.addPriceRecord(price: finalPrice)
+        }
     }
     
     func createDefaultCoins() {

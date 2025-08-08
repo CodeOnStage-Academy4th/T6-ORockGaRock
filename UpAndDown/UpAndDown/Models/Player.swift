@@ -57,6 +57,20 @@ final class Player {
 
         return true
     }
+    
+    // 게임 시작 시 플레이어 상태 초기화
+    func resetForNewGame() {
+        cash = 1_000_000.0 // 100만원으로 초기화
+        holdings.removeAll() // 모든 보유 코인 제거
+        print("플레이어 초기화 완료: 현금 = \(cash), 보유코인 = \(holdings.count)")
+    }
+    
+    // 강제 초기화 (디버깅용)
+    func forceReset() {
+        self.cash = 1_000_000.0
+        self.holdings = []
+        print("강제 초기화: cash = \(self.cash)")
+    }
 }
 
 @Model

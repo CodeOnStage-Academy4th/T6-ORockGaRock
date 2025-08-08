@@ -4,6 +4,7 @@ import SwiftUI
 struct StartView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var gameRecords: [GameRecord]
+    @EnvironmentObject var toastManager: ToastManager
 
     let router: AppRouter
     let gameTimer: GameTimer
@@ -91,6 +92,16 @@ struct StartView: View {
     }
 
     private func startGame() {
+        // 게임 시작 토스트 표시
+        toastManager.showToast(
+            title: "게임이 곧 시작됩니다!",
+            description: "5분간 최대한 많은 수익을 내보세요",
+            duration: 2.0
+        ) {
+            // 토스트가 끝난 후 게임 화면으로 이동
+            self.router.currentRoute = .game
+        }
+        
         // 새 플레이어 생성
         currentPlayer = Player(name: "플레이어")
         if let player = currentPlayer {
@@ -109,8 +120,6 @@ struct StartView: View {
 
         do {
             try modelContext.save()
-            // 게임 화면으로 이동
-            router.currentRoute = .game
         } catch {
             print("게임 시작 실패: \(error)")
         }

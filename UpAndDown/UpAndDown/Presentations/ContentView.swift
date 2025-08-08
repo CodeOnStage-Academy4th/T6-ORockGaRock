@@ -22,65 +22,73 @@ struct ContentView: View {
     @State private var tradeManager: TradeManager?
     @State private var currentPlayer: Player?
     @State private var currentGameRecord: GameRecord?
-
+    @StateObject private var toastManager = ToastManager()
+   
 
     var body: some View {
-        Group {
-            switch router.currentRoute {
-            case .start:
-                StartView(
-                    router: router,
-                    gameTimer: gameTimer,
-                    priceManager: priceManager,
-                    tradeManager: tradeManager,
-                    currentPlayer: $currentPlayer,
-                    currentGameRecord: $currentGameRecord
-                )
-            case .game:
-                if let player = currentPlayer {
+        ZStack {
+            Group {
+                switch router.currentRoute {
+                case .start:
+                    StartView(
+                        router: router,
+                        gameTimer: gameTimer,
+                        priceManager: priceManager,
+                        tradeManager: tradeManager,
+                        currentPlayer: $currentPlayer,
+                        currentGameRecord: $currentGameRecord
+                    )
+                case .game:
+                    if let player = currentPlayer {
 
-                    TabView {
-                        VStack {
-                            GameTimerView(gameTimer: gameTimer)
-                            PortfolioView(
-                                player: player,
-                                coins: coins,
-                                tradeManager: tradeManager,
-                                gameTimer: gameTimer
-                            )
-                        }
-                        .tabItem {
-                            Image(systemName: "chart.line.uptrend.xyaxis")
-                            Text("거래")
-                        }
+                        TabView {
+                            VStack {
+                                GameTimerView(gameTimer: gameTimer)
+                                PortfolioView(
+                                    player: player,
+                                    coins: coins,
+                                    tradeManager: tradeManager,
+                                    gameTimer: gameTimer
+                                )
+                            }
+                            .tabItem {
+                                Image(systemName: "chart.line.uptrend.xyaxis")
+                                Text("거래")
+                            }
 
-                        VStack {
-                            GameTimerView(gameTimer: gameTimer)
-                            HoldingView(
-                                player: player,
-                                coins: coins,
-                                tradeManager: tradeManager
-                            )
-                        }
-                        .tabItem {
-                            Image(systemName: "briefcase")
-                            Text("보유")
+                            VStack {
+                                GameTimerView(gameTimer: gameTimer)
+                                HoldingView(
+                                    player: player,
+                                    coins: coins,
+                                    tradeManager: tradeManager
+                                )
+                            }
+                            .tabItem {
+                                Image(systemName: "briefcase")
+                                Text("보유")
+                            }
                         }
                     }
-
-                    PortfolioView(
-                        player: player,
-                        coins: coins,
-                        tradeManager: tradeManager,
-                        gameTimer: gameTimer
-                    )
-
+                case .result:
+                    ResultView(gameRecord: currentGameRecord)
                 }
-            case .result:
-                ResultView(gameRecord: currentGameRecord)
             }
+            .environment(router)
+            .environmentObject(toastManager)
+            
+            // 토스트 뷰를 최상단에 표시
+            VStack {
+                Spacer()
+                ToastView(
+                    title: toastManager.title,
+                    description: toastManager.description,
+                    isVisible: toastManager.isVisible
+                )
+                Spacer()
+            }
+            .allowsHitTesting(false) // 터치 이벤트가 뒤의 뷰로 전달되도록
         }
-        .environment(router)
         .onAppear {
             setupGame()
         }
@@ -106,6 +114,16 @@ struct ContentView: View {
     private func endGame() {
         priceManager?.stopPriceUpdates()
 
+        // 게임 종료 토스트 표시
+        toastManager.showToast(
+            title: "게임 종료!",
+            description: "결과를 확인해보세요",
+            duration: 2.0
+        ) {
+            // 토스트가 끝난 후 결과 화면으로 이동
+            self.router.currentRoute = .result
+        }
+
         // 게임 기록 완료
         if let player = currentPlayer,
            let gameRecord = currentGameRecord
@@ -118,8 +136,6 @@ struct ContentView: View {
                 print("게임 종료 기록 실패: \(error)")
             }
         }
-
-        router.currentRoute = .result
     }
 }
 

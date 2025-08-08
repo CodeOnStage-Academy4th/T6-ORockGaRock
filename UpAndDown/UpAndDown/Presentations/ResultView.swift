@@ -6,40 +6,82 @@ struct ResultView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var gameRecords: [GameRecord]
     
-    var latestRecord: GameRecord? {
-        gameRecords.filter { $0.isCompleted }.max { $0.endDate! < $1.endDate! }
+    let gameRecord: GameRecord?
+  
+  
+  private let formatter: NumberFormatter = {
+      let f = NumberFormatter()
+      f.numberStyle = .decimal
+      return f
+  }()
+    
+    var displayRecord: GameRecord? {
+        // 전달받은 gameRecord가 있으면 그것을 사용, 없으면 최신 기록 사용
+        return gameRecord ?? gameRecords.filter { $0.isCompleted }.max { $0.endDate! < $1.endDate! }
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            Text("게임 결과")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+        VStack {
+          
+          gameRecordInfo
             
-            if let record = latestRecord {
-                VStack(spacing: 10) {
-                    Text("최종 자산: \(String(format: "%.0f", record.finalAssets))원")
-                        .font(.title2)
-                    
-                    Text("수익률: \(String(format: "%.1f", record.profitRate))%")
-                        .font(.title3)
-                        .foregroundColor(record.profit >= 0 ? .green : .red)
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-            }
             
-            VStack(spacing: 12) {
-                Button("다시 하기") {
-                    router.currentRoute = .start
-                }
-                .buttonStyle(.borderedProminent)
-                
-            }
+          Spacer()
+          
+          againButton
         }
         .padding()
     }
+
+  @ViewBuilder
+  private var gameRecordInfo: some View {
+    if let record = displayRecord {
+        VStack {
+            Text("총 자산")
+              .font(.system(size: 28))
+              .bold()
+              .padding(.bottom, 5)
+          
+            Text("\(formatter.string(from: NSNumber(value: record.finalAssets)) ?? "0")원")
+              .font(.system(size: 40))
+            
+            Text("수익률: \(String(format: "%.0f", record.profitRate))%")
+            .font(.system(size: 20))
+            .bold()
+                
+        }
+        .padding()
+    }
+  }
+  
+  
+  private var againButton: some View {
+    Button("다시 하기") {
+      router.currentRoute = .start
+    }
+    .buttonStyle(.borderedProminent)
+  }
+  
+  
 }
 
-
+#Preview {
+    let schema = Schema([
+        Coin.self,
+        PriceRecord.self,
+        Player.self,
+        CoinHolding.self,
+        GameRecord.self,
+    ])
+    let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: schema, configurations: [modelConfiguration])
+    
+    // 샘플 게임 기록
+    let sampleRecord = GameRecord(playerId: UUID(), initialCash: 1000000.0)
+    sampleRecord.completeGame(finalAssets: 1350000.0)
+    container.mainContext.insert(sampleRecord)
+    
+    return ResultView(gameRecord: sampleRecord)
+        .modelContainer(container)
+        .environment(AppRouter())
+}

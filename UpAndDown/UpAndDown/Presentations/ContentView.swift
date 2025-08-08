@@ -45,7 +45,7 @@ struct ContentView: View {
                     )
                 }
             case .result:
-                ResultView()
+              ResultView(gameRecord: currentGameRecord)
             }
         }
         .environment(router)

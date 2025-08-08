@@ -1,7 +1,6 @@
 import SwiftData
 import SwiftUI
 
-
 @Observable
 class AppRouter {
     enum Route {
@@ -52,7 +51,7 @@ struct ContentView: View {
                             Image(systemName: "chart.line.uptrend.xyaxis")
                             Text("거래")
                         }
-                        
+
                         VStack {
                             GameTimerView(gameTimer: gameTimer)
                             HoldingView(

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct GameTimerView: View {
     let gameTimer: GameTimer
-    
+
     var body: some View {
         VStack {
             Text("남은 시간")
@@ -21,4 +21,3 @@ struct GameTimerView: View {
         .cornerRadius(12)
     }
 }
-

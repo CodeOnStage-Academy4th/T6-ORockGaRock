@@ -35,18 +35,8 @@ struct CatalogCoinRow: View {
                     .foregroundStyle(.black)
             }
             
-            // 그래프 해주세요 ㅠㅠ
-            Image(systemName: "chart.line.uptrend.xyaxis")
-                .resizable()
-                .scaledToFit()
-                .foregroundStyle(.black)
-                .frame(maxWidth: .infinity, maxHeight: 80)
-                
-                .background(
-                    Rectangle()
-                        .fill(.white)
-                        .frame(height: 80)
-                )
+            LineChartView(data: coin.priceHistory.map(\.price))
+                .frame(height: 80)
         }
         .padding(EdgeInsets(top: 30, leading: 30, bottom: 30, trailing: 30))
         .background(.white)

@@ -10,9 +10,22 @@ import SwiftUI
 struct LineChartView: View {
     @State var visibleDataCount: Int = 60
     let data: [Double]
-    let lineColor: Color
     let lineWidth: CGFloat
     let bottomPadding: CGFloat
+    
+    private var lineColor: Color {
+        guard data.count >= 2 else { return .primary }
+        let current = data.last!
+        let previous = data[data.count - 2]
+
+        if current > previous {
+            return .red
+        } else if current < previous {
+            return .blue
+        } else {
+            return .primary
+        }
+    }
     
     // 성능 최적화를 위한 computed property
     private var optimizedData: [Double] {
@@ -20,9 +33,8 @@ struct LineChartView: View {
         return Array(data.suffix(count))
     }
     
-    init(data: [Double], lineColor: Color, lineWidth: CGFloat, fillArea: Bool = false, fillColor: Color? = nil, bottomPadding: CGFloat = 0.2) {
+    init(data: [Double], lineWidth: CGFloat = 2, bottomPadding: CGFloat = 0.2) {
         self.data = data
-        self.lineColor = lineColor
         self.lineWidth = lineWidth
         self.bottomPadding = bottomPadding
     }
@@ -47,7 +59,6 @@ struct LineChartView: View {
         // 선만 그리기
         LineChartView(
             data: [1, 2, 4, 3, 2, 5, 1, 2, 4, 5],
-            lineColor: Color.orange,
             lineWidth: 3
         )
     }

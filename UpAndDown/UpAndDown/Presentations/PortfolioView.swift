@@ -115,10 +115,6 @@ struct CoinRowView: View {
                     }
                 }
             }
-            
-            
-            LineChartView(data: coin.priceHistory.map(\.price), lineColor: priceChangeColor, lineWidth: 2)
-                .frame(height: 120)
 
             HStack(spacing: 12) {
                 Button("매수") {

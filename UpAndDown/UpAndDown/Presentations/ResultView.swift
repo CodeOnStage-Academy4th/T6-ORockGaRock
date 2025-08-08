@@ -74,20 +74,7 @@ struct ResultView: View {
         }
     }
 
-  
-  private var bottomText: some View {
-      if let rate = displayRecord?.profitRate {
-          if rate > 10 {
-              AnyView(RisingTextView())
-          } else if rate < -10 {
-              AnyView(FallingTextView())
-          } else {
-              AnyView(SlidingTextView())
-          }
-      } else {
-          AnyView(EmptyView())
-      }
-  }
+
 
   
   struct RisingTextView: View {

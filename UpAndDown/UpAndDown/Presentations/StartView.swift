@@ -195,6 +195,7 @@ struct StartView: View {
         currentGameRecord = GameRecord(playerId: newPlayer.id, initialCash: 1_000_000.0)
         if let gameRecord = currentGameRecord {
             modelContext.insert(gameRecord)
+            print("새 게임 기록 생성: ID=\(gameRecord.id), 플레이어ID=\(gameRecord.playerId)")
         }
 
         // 게임 시작

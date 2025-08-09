@@ -25,9 +25,26 @@ final class Player {
     }
 
     var totalAssets: Double {
-        return cash + holdings.reduce(0) { total, holding in
+        let holdingsValue = holdings.reduce(0) { total, holding in
             total + holding.totalValue
         }
+        let total = cash + holdingsValue
+        print("플레이어 총 자산 계산: 현금=\(cash), 보유코인가치=\(holdingsValue), 총자산=\(total)")
+        return total
+    }
+    
+    // PriceManager를 사용한 정확한 총 자산 계산
+    func getTotalAssetsWithCurrentPrices(priceManager: PriceManager) -> Double {
+        let holdingsValue = holdings.reduce(0) { total, holding in
+            if let currentPrice = priceManager.getCoinPrice(coinId: holding.coinId) {
+                return total + holding.getCurrentValue(currentPrice: currentPrice)
+            } else {
+                return total + holding.totalValue // 현재 가격을 못 가져오면 평균 가격 사용
+            }
+        }
+        let total = cash + holdingsValue
+        print("플레이어 정확한 총 자산 계산: 현금=\(cash), 보유코인가치=\(holdingsValue), 총자산=\(total)")
+        return total
     }
 
     func addHolding(coinId: UUID, quantity: Double, purchasePrice: Double) {
@@ -89,7 +106,13 @@ final class CoinHolding {
         createdAt = Date()
     }
 
+    // totalValue는 현재 가격을 알아야 하므로 별도 메서드로 계산
     var totalValue: Double {
-        return quantity * averagePrice // PriceManager를 통해 현재 가격을 가져와야 함
+        // 임시로 평균 가격 사용 (실제로는 PriceManager를 통해 현재 가격을 가져와야 함)
+        return quantity * averagePrice
+    }
+    
+    func getCurrentValue(currentPrice: Double) -> Double {
+        return quantity * currentPrice
     }
 }

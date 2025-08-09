@@ -151,6 +151,25 @@ struct ContentView: View {
     private func endGame() {
         priceManager?.stopPriceUpdates()
 
+        // 게임 기록 완료 (토스트 표시 전에 먼저 처리)
+        if let player = currentPlayer,
+           let gameRecord = currentGameRecord,
+           let priceManager = priceManager
+        {
+            let finalAssets = player.getTotalAssetsWithCurrentPrices(priceManager: priceManager)
+            print("게임 종료 - 플레이어 총 자산: \(finalAssets)")
+            gameRecord.completeGame(finalAssets: finalAssets)
+            
+            do {
+                try modelContext.save()
+                print("게임 기록 저장 완료: 최종자산=\(gameRecord.finalAssets), 수익률=\(gameRecord.profitRate)%")
+            } catch {
+                print("게임 종료 기록 실패: \(error)")
+            }
+        } else {
+            print("⚠️ 게임 종료 시 플레이어, 게임 기록 또는 가격 매니저가 없음")
+        }
+
         // 게임 종료 토스트 표시
         toastManager.showToast(
             title: "게임 종료!",
@@ -159,19 +178,6 @@ struct ContentView: View {
         ) {
             // 토스트가 끝난 후 결과 화면으로 이동
             self.router.currentRoute = .result
-        }
-
-        // 게임 기록 완료
-        if let player = currentPlayer,
-           let gameRecord = currentGameRecord
-        {
-            gameRecord.completeGame(finalAssets: player.totalAssets)
-
-            do {
-                try modelContext.save()
-            } catch {
-                print("게임 종료 기록 실패: \(error)")
-            }
         }
     }
 }

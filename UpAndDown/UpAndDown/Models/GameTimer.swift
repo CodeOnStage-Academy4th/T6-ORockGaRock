@@ -9,12 +9,12 @@ import Foundation
 
 @Observable
 class GameTimer {
-    private(set) var timeRemaining: TimeInterval = 60 // 5분 = 300초
+    private(set) var timeRemaining: TimeInterval = 300 // 5분 = 300초
     private(set) var isRunning = false
     private(set) var isGameOver = false
 
     private var timer: Timer?
-    private let gameDuration: TimeInterval = 60 // 5분
+    private let gameDuration: TimeInterval = 300 // 5분
 
     var onGameEnd: (() -> Void)?
     var onTimeUpdate: ((TimeInterval) -> Void)?

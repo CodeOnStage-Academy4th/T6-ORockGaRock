@@ -15,8 +15,26 @@ struct ResultView: View {
     }()
 
     var displayRecord: GameRecord? {
-        // 전달받은 gameRecord가 있으면 그것을 사용, 없으면 최신 기록 사용
-        return gameRecord ?? gameRecords.filter { $0.isCompleted }.max { $0.endDate! < $1.endDate! }
+        // 디버깅을 위한 로그
+        print("ResultView - 전달받은 gameRecord: \(gameRecord?.id.uuidString ?? "nil")")
+        print("ResultView - 저장된 gameRecords 개수: \(gameRecords.count)")
+        print("ResultView - 완료된 gameRecords 개수: \(gameRecords.filter { $0.isCompleted }.count)")
+        
+        // 전달받은 gameRecord가 있으면 그것을 사용
+        if let gameRecord = gameRecord {
+            print("ResultView - 전달받은 기록 사용: 최종자산=\(gameRecord.finalAssets), 수익률=\(gameRecord.profitRate)%")
+            return gameRecord
+        }
+        
+        // 없으면 최신 완료된 기록 사용
+        let latestRecord = gameRecords.filter { $0.isCompleted }.max { $0.endDate! < $1.endDate! }
+        if let latest = latestRecord {
+            print("ResultView - 최신 기록 사용: 최종자산=\(latest.finalAssets), 수익률=\(latest.profitRate)%")
+        } else {
+            print("ResultView - ⚠️ 표시할 기록이 없음")
+        }
+        
+        return latestRecord
     }
 
     var body: some View {
@@ -77,6 +95,22 @@ struct ResultView: View {
                 .padding()
                 .foregroundStyle(isExtreme ? .white : .primary)
                 .shadow(color: isExtreme ? .black : .clear, radius: 4, x: 0, y: 2)
+        } else {
+            // 기록이 없을 때 기본값 표시
+            VStack {
+                Text("총 자산")
+                    .font(.system(size: 28))
+                    .bold()
+                    .padding(.bottom, 5)
+
+                Text("1,000,000원")
+                    .font(.system(size: 40))
+
+                Text("수익률: 0%")
+                    .font(.system(size: 20))
+                    .bold()
+            }
+            .padding()
         }
     }
 
